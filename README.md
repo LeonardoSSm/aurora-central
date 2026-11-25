@@ -1,6 +1,6 @@
 # Aurora Central
 
-Home desktop do Aurora Ecosystem, com um núcleo procedural de partículas 3D e quatro módulos orbitais. A fundação do Ciclo 01 permite explorar a interface. Board, Control, Nexus e Lens informam sua indisponibilidade ao serem acionados.
+Home desktop do Aurora Ecosystem, com um núcleo volumétrico de partículas 3D e quatro módulos orbitais. Board, Control, Nexus e Lens informam sua indisponibilidade ao serem acionados.
 
 ## Requisitos
 
@@ -19,6 +19,8 @@ npm run tauri dev
 ```
 
 `npm run dev` executa a mesma interface em `http://127.0.0.1:1420` para iteração visual no navegador.
+
+Abra **Demonstração do núcleo** no rodapé da home para testar os oito estados e ajustar perfil, FPS e DPR. As opções gráficas também se aplicam à home durante a sessão. O controle de amplitude fica disponível no estado **Falando**.
 
 ## Verificação e build
 
@@ -40,3 +42,5 @@ O build gera o executável em `src-tauri/target/release/`. Windows usa `aurora-c
 - [Identidade visual e referência oficial](docs/visual-identity.md)
 - [Roadmap](docs/roadmap.md)
 - [Relatório e evidências do Ciclo 01](docs/cycle-01.md)
+- [Motor gráfico](docs/graphics-engine.md)
+- [Relatório e evidências do Ciclo 02](docs/cycle-02.md)

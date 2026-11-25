@@ -1,0 +1,5 @@
+{"webview":"Edg/158.0.4370.33","cssViewport":[1280,800],"devicePixelRatio":1,"renderer":"ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)","timer":true,"reducedMotion":false,"duration":6000}
+{"profile":"low","cap":60,"buffer":[610,610],"count":5000,"samples":361,"fps":59.99,"frameP50Ms":16.7,"frameP95Ms":16.9,"gpuSamples":65,"gpuP95Ms":0.08,"cpuMsPerSecond":159}
+{"profile":"medium","cap":60,"buffer":[610,610],"count":20000,"samples":360,"fps":60,"frameP50Ms":16.7,"frameP95Ms":16.9,"gpuSamples":65,"gpuP95Ms":0.16,"cpuMsPerSecond":156}
+{"profile":"high","cap":60,"buffer":[610,610],"count":50000,"samples":361,"fps":59.99,"frameP50Ms":16.7,"frameP95Ms":16.9,"gpuSamples":65,"gpuP95Ms":0.35,"cpuMsPerSecond":173}
+{"profile":"ultra","cap":60,"buffer":[610,610],"count":100000,"samples":360,"fps":60,"frameP50Ms":16.7,"frameP95Ms":17,"gpuSamples":65,"gpuP95Ms":0.59,"cpuMsPerSecond":160}

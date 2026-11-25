@@ -1,0 +1,74 @@
+.core-demo {
+  display: grid;
+  grid-template-rows: auto minmax(280px, 1fr) auto;
+  min-height: 100svh;
+  padding: clamp(16px, 3vh, 34px) clamp(14px, 4vw, 52px);
+}
+
+.demo-header {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.demo-header h1 {
+  margin: 0;
+  color: #f9f1fa;
+  font-size: clamp(20px, 3.2vw, 32px);
+  font-weight: 480;
+  outline: none;
+}
+
+.demo-preview {
+  position: relative;
+  min-height: 0;
+}
+
+.demo-preview .core {
+  width: min(100%, max(280px, calc(100svh - 190px)));
+}
+
+.demo-controls {
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-self: end;
+  justify-content: center;
+  gap: 14px;
+  max-width: 100%;
+  padding-top: 8px;
+}
+
+.demo-controls label {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  color: #d9ccdc;
+  font-size: 13px;
+}
+
+.demo-controls select {
+  min-height: 38px;
+  border: 1px solid #55324f;
+  border-radius: 6px;
+  padding: 4px 9px;
+  background: #110a16;
+  color: #f9f1fa;
+  font: inherit;
+}
+
+.demo-controls input {
+  min-height: 38px;
+  margin: 0;
+  accent-color: #eb75b7;
+}
+
+.demo-controls :is(input, select):focus-visible,
+.core-link:focus-visible {
+  outline: 2px solid #eb75b7;
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .demo-preview .core { width: min(100%, max(280px, calc(100svh - 270px))); }
+}

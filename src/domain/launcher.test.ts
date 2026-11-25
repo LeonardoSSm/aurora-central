@@ -16,6 +16,6 @@ describe('registry and launcher', () => {
       moduleId: id,
       result: { status: availability },
     })
-    expect(moduleNotice(event)).toBe('Abertura indisponível no Ciclo 01.')
+    expect(moduleNotice(event)).toBe('Abertura indisponível nesta versão.')
   })
 })
