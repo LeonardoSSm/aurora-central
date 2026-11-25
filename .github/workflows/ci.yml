@@ -1,0 +1,44 @@
+name: Ciclo 01
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verificar (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2025, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Instalar dependências nativas do Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+      - name: Preparar Rust estável
+        run: rustup toolchain install stable --profile minimal --component rustfmt
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: cargo +stable fmt --manifest-path src-tauri/Cargo.toml -- --check
+      - run: npm run tauri build -- --no-bundle -- --locked
+        env:
+          RUSTUP_TOOLCHAIN: stable
+      - run: cargo +stable test --manifest-path src-tauri/Cargo.toml --release --locked --features tauri/custom-protocol

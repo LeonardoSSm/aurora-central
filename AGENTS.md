@@ -13,3 +13,8 @@
 - Never present mock integrations, untested platform compatibility or invented benchmarks as real.
 - Run available lint, type checks, tests, builds and visual inspection; report commands and outcomes. Stop at the cycle boundary for review.
 - Establish product, architecture, visual and roadmap documentation in Cycle 01; add graphics, integration, security and implementation reports in subsequent cycles.
+
+## Working in this repository
+- Run the project and verification commands listed in README.md.
+- Compare the home against the reference linked in docs/visual-identity.md.
+- Keep runtime and platform evidence tied to the cycle report.
