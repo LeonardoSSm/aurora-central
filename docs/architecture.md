@@ -5,7 +5,7 @@ A janela é criada por Tauri 2 e Rust. A WebView do sistema renderiza o frontend
 | Local | Responsabilidade |
 | --- | --- |
 | `src/ui/` | Home, navegação por teclado, composição orbital e feedback visual |
-| `src/graphics/` | Canvas, distribuição inicial, shaders GLSL e ciclo de renderização WebGL |
+| `src/graphics/` | Canvas WebGL 2, perfis, estados, amostragem volumétrica, shaders GLSL e ciclo de renderização |
 | `src/domain/registry.ts` | IDs, nomes, âncoras e disponibilidade dos módulos |
 | `src/domain/commands.ts` e `events.ts` | Contratos para pedido de abertura e resultado |
 | `src/domain/launcher.ts` | Resultado local de abertura da fundação |
@@ -17,8 +17,7 @@ Acionar um botão cria `module.open` com um ID fechado. O launcher retorna `modu
 
 ## Decisões
 
-- **WebGL e GLSL na fundação**. Um canvas, um buffer de 7 mil posições e uma chamada de desenho por quadro atendem à prévia. A deformação e a projeção ficam no shader. A UI React controla somente o ciclo de vida do canvas. O fundo procedural em CSS mantém a composição quando a WebView não inicializa WebGL.
-- **Three.js e React Three Fiber**. Three.js oferece `BufferGeometry`, `Points`, materiais GLSL e gerenciamento de cena. R3F é seu renderizador declarativo para React e agrega valor se o motor precisar compor cenas e elementos interativos. O custo nesta fundação seria adicionar dependências e um segundo ciclo de vida para uma única nuvem. O Ciclo 02 avaliará o motor com essas ferramentas e medirá os perfis previstos na issue. [Three.js](https://threejs.org/docs/) · [React Three Fiber](https://r3f.docs.pmnd.rs/getting-started/introduction)
+- **Three.js e GLSL no núcleo**. O Ciclo 02 usa `BufferGeometry`, `Points` e `RawShaderMaterial` sobre WebGL 2. O React monta o canvas e envia alterações de estado. O renderizador possui o agendamento e as atualizações por quadro. [Motor gráfico](graphics-engine.md)
 - **Estado local de React**. A seleção serve apenas à home. Zustand pode atender quando motor, controles e provedor de eventos precisarem de seletores e assinaturas fora da árvore React. Estado por quadro permanece no renderizador. [Zustand](https://github.com/pmndrs/zustand)
 - **Adaptadores sob demanda**. As interfaces registram as fronteiras do launcher e da persistência. As implementações e seus requisitos de plataforma entram nos ciclos correspondentes.
 

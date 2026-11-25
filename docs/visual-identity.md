@@ -15,4 +15,4 @@ A home tem fundo preto quase uniforme, assinatura Aurora compacta no topo e um n
 
 Uma órbita elíptica de traço fino agrupa os quatro módulos. As cápsulas apresentam ícone e nome. O feedback aparece no rodapé após o acionamento. Os botões mantêm foco visível e a preferência de movimento reduzido mantém o núcleo estático. Em janelas estreitas a órbita e os módulos ajustam suas posições para preservar a área central.
 
-A prévia do Ciclo 01 usa shaders próprios, assinatura desenhada em CSS e controles nativos da janela do sistema. A referência participa da comparação de composição. O motor e a aprovação visual definitiva do núcleo pertencem ao Ciclo 02.
+A assinatura é desenhada em CSS e a janela usa controles nativos do sistema. O Ciclo 02 incorpora a distribuição volumétrica, as dobras animadas e os estados do núcleo. O [relatório do Ciclo 02](cycle-02.md) registra a comparação com a referência e as capturas para aprovação visual.

@@ -1,12 +1,15 @@
 precision mediump float;
-varying vec3 vColor;
-varying float vLight;
+
+in vec3 vColor;
+in float vLight;
+out vec4 fragment;
 
 void main() {
-  float radius = length(gl_PointCoord - vec2(0.5)) * 2.0;
-  float pin = 1.0 - smoothstep(0.13, 0.68, radius);
-  float halo = 1.0 - smoothstep(0.25, 1.0, radius);
-  float intensity = (pin * 0.92 + halo * 0.22) * vLight;
-  vec3 color = mix(vColor, vec3(1.0, 0.82, 0.88), pin * vLight * 0.62);
-  gl_FragColor = vec4(color, intensity);
+  vec2 point = gl_PointCoord * 2.0 - 1.0;
+  float radius = dot(point, point);
+  float pin = 1.0 - smoothstep(0.025, 0.60, radius);
+  float halo = 1.0 - smoothstep(0.10, 1.0, radius);
+  float alpha = min(1.0, (0.86 * pin + 0.19 * halo) * vLight);
+  vec3 color = mix(vColor, vec3(1.0, 0.90, 0.95), 0.38 * pin * min(vLight, 1.0));
+  fragment = vec4(color * alpha, alpha);
 }

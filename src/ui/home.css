@@ -80,29 +80,24 @@ body { margin: 0; }
   z-index: 1;
   top: 50%;
   left: 50%;
-  width: min(68%, calc(100svh - 120px));
+  width: min(70%, calc(100svh - 192px));
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
-  background:
-    radial-gradient(ellipse at 66% 42%, #7c153a31, transparent 56%),
-    radial-gradient(ellipse at 41% 64%, #37148d2b, transparent 56%),
-    radial-gradient(ellipse, #4d0d454a, transparent 68%);
   pointer-events: none;
 }
 
-.core::before {
+.core-fallback {
+  display: none;
   position: absolute;
-  inset: 12%;
-  border-radius: 45% 55% 49% 51% / 51% 43% 57% 49%;
-  background:
-    repeating-radial-gradient(circle, #ffcdea85 0 0.8px, transparent 1.1px 100%) 0 0 / 10px 10px,
-    conic-gradient(from 5deg, #ee5d91, #af206b, #672aaa, #2f46b6, #a027bb, #ee5d91);
-  mask-image: radial-gradient(ellipse, #000 18%, #0009 52%, transparent 73%);
-  opacity: 0.68;
-  content: "";
+  inset: 0;
+  place-items: center;
+  margin: 0;
+  color: #cbbbd1;
+  text-align: center;
+  font-size: 13px;
 }
 
-.core:has(canvas[data-rendering="webgl"])::before { display: none; }
+.core canvas[data-rendering="fallback"] + .core-fallback { display: grid; }
 
 .core canvas { display: block; position: relative; width: 100%; height: 100%; }
 
@@ -115,6 +110,7 @@ body { margin: 0; }
   border: 1px solid #3f203c;
   border-color: #361629 #743252 #542950 #3b296e;
   border-radius: 50%;
+  mask-image: linear-gradient(90deg, #000 22%, #0007 35%, #0002 47%, #0002 53%, #0007 65%, #000 78%);
 }
 
 .module-list {
@@ -195,7 +191,7 @@ body { margin: 0; }
 
 .module-name small { font-size: 0.73em; color: #d4c4d4; }
 
-.home-footer { z-index: 2; min-height: 29px; width: 100%; text-align: center; }
+.home-footer { z-index: 2; min-height: 39px; width: 100%; text-align: center; }
 
 .status {
   display: flex;
@@ -208,6 +204,15 @@ body { margin: 0; }
 }
 
 .status strong { color: #f4dcf1; font-weight: 600; }
+
+.core-link {
+  border-radius: 2px;
+  color: #cbbbd1;
+  font-size: 13px;
+  text-underline-offset: 3px;
+}
+
+.home-core-link { display: inline-block; margin-top: 5px; }
 
 .sr-only {
   position: absolute;

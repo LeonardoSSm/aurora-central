@@ -4,8 +4,9 @@ import { openModule } from '../domain/launcher'
 import { modules } from '../domain/registry'
 import { moduleNotice } from '../domain/state'
 import { ParticleCore } from '../graphics/ParticleCore'
+import type { GraphicsSettings } from '../graphics/profiles'
 
-export function AuroraHome() {
+export function AuroraHome({ settings }: { settings: GraphicsSettings }) {
   const [selection, setSelection] = useState<ModuleOpenSettled | null>(null)
   const selectedModule = modules.find((module) => module.id === selection?.moduleId)
 
@@ -19,7 +20,7 @@ export function AuroraHome() {
 
       <section className="scene" aria-label="Ecossistema Aurora">
         <div className="orbit" aria-hidden="true" />
-        <ParticleCore />
+        <ParticleCore state="idle" settings={settings} />
         <ul className="module-list" aria-label="Módulos Aurora">
           {modules.map((module) => (
             <li key={module.id} className={`module-slot ${module.anchor} module-${module.id}`}>
@@ -45,6 +46,7 @@ export function AuroraHome() {
         <p className="status" role="status">
           {selection && selectedModule ? <><strong>Aurora {selectedModule.name}</strong><span>{moduleNotice(selection)}</span></> : null}
         </p>
+        <a href="#/nucleo" className="core-link home-core-link">Demonstração do núcleo</a>
       </footer>
     </main>
   )
