@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Aurora Central",
+  "version": "0.1.0",
+  "identifier": "io.github.leonardossm.auroracentral",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Aurora Central",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 480,
+        "minHeight": 560,
+        "backgroundColor": "#030205"
+      }
+    ],
+    "security": {
+      "capabilities": ["main-local"],
+      "csp": {
+        "default-src": "'self'",
+        "script-src": "'self'",
+        "style-src": "'self'",
+        "img-src": "'self'",
+        "connect-src": "'none'",
+        "object-src": "'none'",
+        "frame-src": "'none'",
+        "frame-ancestors": "'none'",
+        "base-uri": "'none'",
+        "form-action": "'none'"
+      }
+    }
+  },
+  "bundle": { "active": false, "icon": ["icons/icon.ico", "icons/icon.png"] }
+}

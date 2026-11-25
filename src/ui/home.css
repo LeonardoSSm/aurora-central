@@ -1,0 +1,239 @@
+@import './module-icons.css';
+
+:root {
+  color-scheme: dark;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-synthesis: none;
+  background: #030205;
+  color: #f9f1fa;
+}
+
+* { box-sizing: border-box; }
+
+body { margin: 0; }
+
+.home {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  justify-items: center;
+  min-height: 510px;
+  height: 100svh;
+  padding: clamp(16px, 3.8vh, 55px) 20px 13px;
+  overflow: hidden;
+}
+
+.brand {
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.brand-mark {
+  display: block;
+  width: 54px;
+  height: 39px;
+  background: conic-gradient(from 220deg, #8143f0, #c66bff, #ffe3cf, #ff72ba, #e930b0, #8143f0);
+  clip-path: path("M 1 31 C 9 32 13 26 17 19 L 25 5 C 28 0 34 0 37 5 L 48 24 C 50 28 52 28 54 25 C 58 33 49 39 43 34 C 36 27 30 25 23 28 C 26 23 33 22 38 24 L 31 11 C 29 8 27 12 26 15 L 16 33 C 12 41 2 39 1 31 Z");
+}
+
+.brand-name {
+  margin: 0 -0.37em 0 0;
+  font-size: clamp(23px, 3vw, 38px);
+  font-weight: 450;
+  line-height: 1.05;
+  letter-spacing: 0.37em;
+  text-transform: uppercase;
+}
+
+.brand-detail {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  color: #e2a6d5;
+  font-size: 10px;
+  letter-spacing: 0.6em;
+  text-transform: uppercase;
+}
+
+.brand-detail::before,
+.brand-detail::after {
+  width: 40px;
+  height: 1px;
+  background: #552342;
+  content: "";
+}
+
+.scene {
+  position: relative;
+  isolation: isolate;
+  align-self: center;
+  width: min(100%, 1340px);
+  height: 100%;
+  max-height: 880px;
+}
+
+.core {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  width: min(68%, calc(100svh - 120px));
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background:
+    radial-gradient(ellipse at 66% 42%, #7c153a31, transparent 56%),
+    radial-gradient(ellipse at 41% 64%, #37148d2b, transparent 56%),
+    radial-gradient(ellipse, #4d0d454a, transparent 68%);
+  pointer-events: none;
+}
+
+.core::before {
+  position: absolute;
+  inset: 12%;
+  border-radius: 45% 55% 49% 51% / 51% 43% 57% 49%;
+  background:
+    repeating-radial-gradient(circle, #ffcdea85 0 0.8px, transparent 1.1px 100%) 0 0 / 10px 10px,
+    conic-gradient(from 5deg, #ee5d91, #af206b, #672aaa, #2f46b6, #a027bb, #ee5d91);
+  mask-image: radial-gradient(ellipse, #000 18%, #0009 52%, transparent 73%);
+  opacity: 0.68;
+  content: "";
+}
+
+.core:has(canvas[data-rendering="webgl"])::before { display: none; }
+
+.core canvas { display: block; position: relative; width: 100%; height: 100%; }
+
+.orbit {
+  position: absolute;
+  top: 22%;
+  left: 8%;
+  width: 84%;
+  height: 62%;
+  border: 1px solid #3f203c;
+  border-color: #361629 #743252 #542950 #3b296e;
+  border-radius: 50%;
+}
+
+.module-list {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+}
+
+.module-slot {
+  position: absolute;
+  --module-accent: #eb75b7;
+}
+
+.module-control { --module-accent: #a1bcff; }
+.module-nexus { --module-accent: #d090ff; }
+.module-lens { --module-accent: #ffa993; }
+
+/* The anchor coordinates lie on the ellipse; capsule size only changes the offset. */
+.upper-left { top: 27.55%; left: 26%; transform: translate(calc(-100% - 9px), calc(-100% - 9px)); }
+.upper-right { top: 27.55%; right: 26%; transform: translate(calc(100% + 9px), calc(-100% - 9px)); }
+.lower-left { top: 75.07%; left: 20.5%; transform: translate(calc(-100% - 9px), 9px); }
+.lower-right { top: 75.07%; right: 20.5%; transform: translate(calc(100% + 9px), 9px); }
+
+.module-slot::after {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: color-mix(in srgb, white 72%, var(--module-accent));
+  box-shadow: 0 0 6px 2px var(--module-accent), 0 0 14px 2px var(--module-accent);
+  content: "";
+}
+
+.upper-left::after { bottom: -12.5px; right: -12.5px; }
+.upper-right::after { bottom: -12.5px; left: -12.5px; }
+.lower-left::after { top: -12.5px; right: -12.5px; }
+.lower-right::after { top: -12.5px; left: -12.5px; }
+
+.module {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: clamp(9px, 1.15vw, 16px);
+  min-width: clamp(112px, 13vw, 170px);
+  min-height: 60px;
+  padding: 7px clamp(10px, 1.3vw, 19px);
+  border: 1px solid color-mix(in srgb, var(--module-accent) 50%, #211326);
+  border-radius: 999px;
+  box-shadow: inset 0 0 13px color-mix(in srgb, var(--module-accent) 11%, transparent);
+  background: #0c060f;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.module:hover,
+.module:focus-visible { border-color: var(--module-accent); }
+
+.module:focus-visible {
+  outline: 2px solid var(--module-accent);
+  outline-offset: 4px;
+}
+
+.module-name {
+  display: grid;
+  gap: 1px;
+  border-left: 1px solid color-mix(in srgb, var(--module-accent) 29%, transparent);
+  padding-left: clamp(9px, 1.15vw, 16px);
+  font-size: clamp(13px, 1.4vw, 17px);
+  line-height: 1.16;
+}
+
+.module-name small { font-size: 0.73em; color: #d4c4d4; }
+
+.home-footer { z-index: 2; min-height: 29px; width: 100%; text-align: center; }
+
+.status {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 0;
+  color: #cbbbd1;
+  font-size: 13px;
+}
+
+.status strong { color: #f4dcf1; font-weight: 600; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 740px) {
+  .home { padding-inline: 14px; }
+  .core { width: min(98%, calc(100svh - 155px)); }
+  .orbit { left: 6%; width: 88%; }
+  .module-slot { transform: none; }
+  .module-slot::after { display: none; }
+  .upper-left, .upper-right { top: 12%; }
+  .lower-left, .lower-right { top: auto; bottom: 12%; }
+  .upper-left, .lower-left { left: 1%; }
+  .upper-right, .lower-right { right: 1%; }
+}
+
+@media (max-width: 520px) {
+  .module { min-height: 51px; }
+  .upper-left, .upper-right { top: 7%; }
+  .lower-left, .lower-right { bottom: 7%; }
+  .orbit { top: 17%; height: 67%; }
+}
