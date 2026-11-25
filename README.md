@@ -20,6 +20,8 @@ npm run tauri dev
 
 `npm run dev` executa a mesma interface em `http://127.0.0.1:1420` para iteração visual no navegador.
 
+Na home, use os botões de visualização ou `Alt+1`, `Alt+2` e `Alt+3` para abrir os modos Central, Imersivo e Ambiental. `Esc` volta à Central, cancela uma seleção em curso e sai da tela cheia. `F11` alterna a tela cheia. No modo Ambiental, mover o ponteiro, tocar ou focar o botão com Tab revela **Voltar à Central**.
+
 Abra **Demonstração do núcleo** no rodapé da home para testar os oito estados e ajustar perfil, FPS e DPR. As opções gráficas também se aplicam à home durante a sessão. O controle de amplitude fica disponível no estado **Falando**.
 
 ## Verificação e build
@@ -44,3 +46,4 @@ O build gera o executável em `src-tauri/target/release/`. Windows usa `aurora-c
 - [Relatório e evidências do Ciclo 01](docs/cycle-01.md)
 - [Motor gráfico](docs/graphics-engine.md)
 - [Relatório e evidências do Ciclo 02](docs/cycle-02.md)
+- [Relatório e evidências do Ciclo 03](docs/cycle-03.md)

@@ -28,6 +28,7 @@ export function createParticleRenderer(canvas: HTMLCanvasElement) {
     uProfileLight: { value: 1 },
     uPrimaryCount: { value: graphicsProfiles.low.count },
     uPointer: { value: new Vector2() },
+    uOrbitEnergy: { value: new Vector2() },
     uPose: { value: new Vector4() },
     uSignals: { value: new Vector4() },
     uOutcomes: { value: new Vector2() },
@@ -74,7 +75,7 @@ export function createParticleRenderer(canvas: HTMLCanvasElement) {
       camera.updateProjectionMatrix()
       uniforms.uPixels.value = dpr * profile.pointSize * Math.min(1.16, Math.max(0.68, height / 600))
     },
-    draw(motion: CoreMotion, pointer: Vector2, reduced: boolean) {
+    draw(motion: CoreMotion, pointer: Vector2, orbitEnergy: Vector2, reduced: boolean) {
       const { pose } = motion
       uniforms.uTime.value = reduced ? 0 : motion.time
       uniforms.uFlow.value = reduced ? 0 : motion.flowTime
@@ -83,6 +84,7 @@ export function createParticleRenderer(canvas: HTMLCanvasElement) {
       uniforms.uAmplitude.value = reduced ? 0 : motion.amplitude
       uniforms.uStill.value = Number(reduced)
       uniforms.uPointer.value.copy(pointer).multiplyScalar(reduced ? 0 : 1)
+      uniforms.uOrbitEnergy.value.copy(orbitEnergy)
       uniforms.uPose.value.set(pose.scale, pose.light, pose.warmth, pose.folds)
       uniforms.uSignals.value.set(pose.listening, pose.thinking, pose.speaking, pose.executing)
       uniforms.uOutcomes.value.set(pose.success, pose.error)

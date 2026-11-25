@@ -10,6 +10,8 @@ O vertex shader combina dois campos de ruído 3D, ondas de frequência diferente
 
 A paleta combina azul, violeta, lilás, magenta, rosa e coral. Um foco coral migra lentamente pela região frontal. As cristas elevam o brilho dos pontos e as regiões internas recebem menos luz. O fragment shader desenha o ponto e seu halo curto com mistura aditiva em um canvas transparente. O fundo da home vem do CSS. A renderização usa um único passe e dispensa texturas e pós-processamento.
 
+A home pode enviar um vetor `orbitEnergy` em coordenadas da tela. O motor amortece as mudanças no vetor e o shader concentra brilho e deslocamento das partículas existentes na direção do módulo. A seleção usa temporariamente `executing` antes de retornar a `idle`. O modo de movimento reduzido desativa o vetor e a mudança de estado da seleção. A reação compartilha o mesmo canvas, buffer e chamada de desenho do núcleo.
+
 ## Estados
 
 | Estado | Comportamento |

@@ -7,10 +7,10 @@ interface ParticleCoreProps extends CoreInput {
   settings: GraphicsSettings
 }
 
-export function ParticleCore({ state, amplitude, settings }: ParticleCoreProps) {
+export function ParticleCore({ state, amplitude, orbitEnergy, settings }: ParticleCoreProps) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const runtime = useRef<ReturnType<typeof runCore>>(null)
-  const [initial] = useState(() => ({ input: { state, amplitude }, settings }))
+  const [initial] = useState(() => ({ input: { state, amplitude, orbitEnergy }, settings }))
 
   useEffect(() => {
     if (!canvas.current) return
@@ -23,8 +23,8 @@ export function ParticleCore({ state, amplitude, settings }: ParticleCoreProps) 
   }, [initial])
 
   useEffect(() => {
-    runtime.current?.update({ state, amplitude }, settings)
-  }, [state, amplitude, settings])
+    runtime.current?.update({ state, amplitude, orbitEnergy }, settings)
+  }, [state, amplitude, orbitEnergy, settings])
 
   return (
     <div className="core">

@@ -29,7 +29,7 @@
         "script-src": "'self'",
         "style-src": "'self'",
         "img-src": "'self'",
-        "connect-src": "'none'",
+        "connect-src": "ipc: http://ipc.localhost",
         "object-src": "'none'",
         "frame-src": "'none'",
         "frame-ancestors": "'none'",

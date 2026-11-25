@@ -9,6 +9,7 @@ export function runCore(canvas: HTMLCanvasElement, input: CoreInput, settings: G
   const motion = new CoreMotion()
   const pointer = new Vector2()
   const destination = new Vector2()
+  const orbitEnergy = new Vector2()
   const pacer = new FramePacer()
   let renderer: ReturnType<typeof createParticleRenderer> = null
   let raf: number | undefined
@@ -17,6 +18,7 @@ export function runCore(canvas: HTMLCanvasElement, input: CoreInput, settings: G
   let lastDraw: number | undefined
   let lastInput = performance.now()
   let dimensions = { width: 0, height: 0, dpr: 0 }
+  let reduced = motionPreference.matches
   let contextLost = false
   let renderFailed = false
 
@@ -37,10 +39,13 @@ export function runCore(canvas: HTMLCanvasElement, input: CoreInput, settings: G
 
   function draw(seconds: number) {
     if (!renderer || contextLost || renderFailed || document.hidden || !dimensions.width || !dimensions.height) return
-    const reduced = motionPreference.matches
     motion.advance(seconds, reduced)
     pointer.set(smooth(pointer.x, destination.x, seconds, 0.28), smooth(pointer.y, destination.y, seconds, 0.28))
-    renderFailed = !renderer.draw(motion, pointer, reduced)
+    orbitEnergy.set(
+      reduced ? 0 : smooth(orbitEnergy.x, input.orbitEnergy?.x ?? 0, seconds, 0.21),
+      reduced ? 0 : smooth(orbitEnergy.y, input.orbitEnergy?.y ?? 0, seconds, 0.21),
+    )
+    renderFailed = !renderer.draw(motion, pointer, orbitEnergy, reduced)
     canvas.dataset.rendering = renderFailed ? 'fallback' : 'webgl'
   }
 
@@ -62,7 +67,7 @@ export function runCore(canvas: HTMLCanvasElement, input: CoreInput, settings: G
   function tick(now: number) {
     raf = undefined
     const fps = limit(now)
-    if (!fps || !renderer || contextLost || renderFailed || motionPreference.matches) return
+    if (!fps || !renderer || contextLost || renderFailed || reduced) return
 
     if (pacer.ready(now, fps)) {
       draw(lastDraw === undefined ? 0 : Math.min((now - lastDraw) / 1000, 0.1))
@@ -83,8 +88,13 @@ export function runCore(canvas: HTMLCanvasElement, input: CoreInput, settings: G
   function sync() {
     stop()
     if (!renderer || contextLost || renderFailed || document.hidden) return
-    if (motionPreference.matches) draw(0)
+    if (reduced) draw(0)
     else raf = window.requestAnimationFrame(tick)
+  }
+
+  function changeMotionPreference(event: MediaQueryListEvent) {
+    reduced = event.matches
+    sync()
   }
 
   function wake() {
@@ -160,7 +170,7 @@ export function runCore(canvas: HTMLCanvasElement, input: CoreInput, settings: G
   window.addEventListener('blur', blur)
   canvas.addEventListener('webglcontextlost', lose)
   canvas.addEventListener('webglcontextrestored', queueRestore)
-  motionPreference.addEventListener('change', sync)
+  motionPreference.addEventListener('change', changeMotionPreference)
   document.addEventListener('visibilitychange', sync)
   restore()
 
@@ -176,7 +186,7 @@ export function runCore(canvas: HTMLCanvasElement, input: CoreInput, settings: G
       motion.setInput(input)
       if (profileChanged) renderer?.setProfile(settings.profile)
       if (sizeChanged) resize(true)
-      if (pacingChanged || (stateChanged && motionPreference.matches && !sizeChanged)) sync()
+      if (pacingChanged || (stateChanged && reduced && !sizeChanged)) sync()
     },
     dispose() {
       stop()
@@ -191,7 +201,7 @@ export function runCore(canvas: HTMLCanvasElement, input: CoreInput, settings: G
       window.removeEventListener('blur', blur)
       canvas.removeEventListener('webglcontextlost', lose)
       canvas.removeEventListener('webglcontextrestored', queueRestore)
-      motionPreference.removeEventListener('change', sync)
+      motionPreference.removeEventListener('change', changeMotionPreference)
       document.removeEventListener('visibilitychange', sync)
       renderer?.dispose()
     },
