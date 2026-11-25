@@ -2,10 +2,12 @@ export const coreStates = ['idle', 'listening', 'thinking', 'speaking', 'executi
 
 export type CoreState = (typeof coreStates)[number]
 
-/** An optional level in [0, 1], independent of the source of the audio. */
 export interface CoreInput {
   state: CoreState
+  /** An optional level in [0, 1], independent of the source of the audio. */
   amplitude?: number
+  /** Direction and strength of orbital attention, in screen coordinates with Y up. */
+  orbitEnergy?: { x: number; y: number }
 }
 
 const idle = {

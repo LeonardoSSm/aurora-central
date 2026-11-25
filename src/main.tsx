@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { defaultGraphics } from './graphics/profiles'
 import { AuroraHome } from './ui/AuroraHome'
 import { CoreDemo } from './ui/CoreDemo'
+import { useFullscreen } from './ui/useFullscreen'
 import './ui/home.css'
 
 function subscribeToRoute(onChange: () => void) {
@@ -17,10 +18,16 @@ function getRoute() {
 function AuroraApp() {
   const route = useSyncExternalStore(subscribeToRoute, getRoute)
   const [settings, setSettings] = useState(defaultGraphics)
+  const fullscreen = useFullscreen()
 
-  return route === '#/nucleo'
-    ? <CoreDemo settings={settings} onSettingsChange={setSettings} />
-    : <AuroraHome settings={settings} />
+  return (
+    <>
+      {route === '#/nucleo'
+        ? <CoreDemo settings={settings} onSettingsChange={setSettings} />
+        : <AuroraHome settings={settings} fullscreen={fullscreen.fullscreen} onToggleFullscreen={fullscreen.toggle} />}
+      <p className="fullscreen-notice" role="status">{fullscreen.notice}</p>
+    </>
+  )
 }
 
 createRoot(document.getElementById('root')!).render(

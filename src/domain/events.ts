@@ -8,5 +8,14 @@ export type ModuleOpenResult =
 export interface ModuleOpenSettled {
   readonly type: 'module.open.settled'
   readonly moduleId: ModuleId
+  readonly requestId: number
   readonly result: ModuleOpenResult
+}
+
+/** The visual transition was interrupted before the command reached the launcher. */
+export interface ModuleOpenCancelled {
+  readonly type: 'module.open.cancelled'
+  readonly moduleId: ModuleId
+  readonly requestId: number
+  readonly reason: 'superseded' | 'dismissed'
 }

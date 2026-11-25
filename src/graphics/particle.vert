@@ -13,6 +13,7 @@ uniform float uPixels;
 uniform float uProfileLight;
 uniform float uPrimaryCount;
 uniform vec2 uPointer;
+uniform vec2 uOrbitEnergy;
 uniform vec4 uPose;       // scale, light, warmth, folds
 uniform vec4 uSignals;    // listening, thinking, speaking, executing
 uniform vec2 uOutcomes;   // success, error
@@ -79,6 +80,8 @@ void main() {
   p.xy = rotate(p.xy, 0.11 + 0.075 * sin(uTime * 0.32 + 0.8));
   p.y *= 0.965;
   p.xy += uPointer * 0.029;
+  float orbitalConcentration = smoothstep(0.12, 0.90, dot(p.xy, uOrbitEnergy));
+  p.xy += uOrbitEnergy * (0.018 + 0.092 * orbitalConcentration);
   vec4 view = modelViewMatrix * vec4(p, 1.0);
   gl_Position = projectionMatrix * view;
 
@@ -104,10 +107,11 @@ void main() {
   color = mix(color, vec3(1.0, 0.35, 0.16), uOutcomes.y * (0.53 + 0.16 * error));
   color = mix(color, vec3(1.0, 0.83, 0.97), 0.27 * lightBand + 0.25 * success);
 
-  vColor = color;
+  vColor = mix(color, vec3(1.0, 0.78, 0.96), 0.22 * orbitalConcentration);
   float primary = 1.0 - step(uPrimaryCount, float(gl_VertexID));
   float behaviorLight = 0.08 * listening + 0.11 * thinking + 0.26 * speaking + 0.38 * executing + 0.52 * success;
-  vLight = (0.24 + 0.58 * depth + 1.05 * lightBand + 0.73 * warmLight + behaviorLight) * uPose.y * uProfileLight;
+  vLight = (0.24 + 0.58 * depth + 1.05 * lightBand + 0.73 * warmLight + behaviorLight
+    + orbitalConcentration * (0.18 + 0.44 * lightBand)) * uPose.y * uProfileLight;
   vLight *= mix(0.30, 1.0, outer) * (0.58 + 0.42 * grain) * mix(0.84, 1.18, primary);
 
   float apparentSize = 1.30 + 0.85 * depth + 1.03 * lightBand + 0.62 * grain * grain + 0.77 * warmLight;

@@ -1,16 +1,24 @@
-export type ModuleId = 'board' | 'control' | 'nexus' | 'lens'
-export type OrbitAnchor = 'upper-left' | 'lower-left' | 'upper-right' | 'lower-right'
+type ModuleIcon = 'quadrants' | 'sliders' | 'nodes' | 'aperture'
 
-export interface AuroraModule {
-  readonly id: ModuleId
+interface ModuleDefinition {
+  readonly id: string
   readonly name: string
-  readonly anchor: OrbitAnchor
+  readonly icon: ModuleIcon
+  readonly accent: `#${string}`
+  /** Angle in degrees on the projected orbit, clockwise from the right. */
+  readonly angle: number
   readonly availability: 'unavailable' | 'available'
+  readonly launchStrategy: 'unconfigured' | 'registered-module'
 }
 
-export const modules: readonly AuroraModule[] = [
-  { id: 'board', name: 'Board', anchor: 'upper-left', availability: 'unavailable' },
-  { id: 'control', name: 'Control', anchor: 'lower-left', availability: 'unavailable' },
-  { id: 'nexus', name: 'Nexus', anchor: 'upper-right', availability: 'unavailable' },
-  { id: 'lens', name: 'Lens', anchor: 'lower-right', availability: 'unavailable' },
-]
+const registry = [
+  { id: 'board', name: 'Board', icon: 'quadrants', accent: '#eb75b7', angle: -143, availability: 'unavailable', launchStrategy: 'unconfigured' },
+  { id: 'control', name: 'Control', icon: 'sliders', accent: '#a1bcff', angle: 143, availability: 'unavailable', launchStrategy: 'unconfigured' },
+  { id: 'nexus', name: 'Nexus', icon: 'nodes', accent: '#d090ff', angle: -37, availability: 'unavailable', launchStrategy: 'unconfigured' },
+  { id: 'lens', name: 'Lens', icon: 'aperture', accent: '#ffa993', angle: 37, availability: 'unavailable', launchStrategy: 'unconfigured' },
+] as const satisfies readonly ModuleDefinition[]
+
+export type ModuleId = (typeof registry)[number]['id']
+export type AuroraModule = ModuleDefinition & { readonly id: ModuleId }
+
+export const modules: readonly AuroraModule[] = registry

@@ -2,33 +2,33 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: clamp(22px, 3vw, 34px);
+  width: clamp(22px, 2.8cqw, 35px);
   aspect-ratio: 1;
   color: var(--module-accent);
 }
 
-.module-board .module-icon {
+.icon-quadrants {
   grid-template-columns: repeat(2, 1fr);
   gap: 3px;
 }
 
-.module-board i {
+.icon-quadrants i {
   width: 100%;
   aspect-ratio: 1;
   border: 1.5px solid;
   border-radius: 3px;
 }
 
-.module-control .module-icon { grid-auto-flow: column; }
+.icon-sliders { grid-auto-flow: column; }
 
-.module-control i {
+.icon-sliders i {
   position: relative;
   width: 1px;
   height: 94%;
   background: currentColor;
 }
 
-.module-control i::before {
+.icon-sliders i::before {
   position: absolute;
   top: var(--knob, 22%);
   left: -2px;
@@ -40,11 +40,11 @@
   content: "";
 }
 
-.module-control i:nth-child(2) { --knob: 55%; }
-.module-control i:nth-child(3) { --knob: 34%; }
-.module-control i:nth-child(4) { display: none; }
+.icon-sliders i:nth-child(2) { --knob: 55%; }
+.icon-sliders i:nth-child(3) { --knob: 34%; }
+.icon-sliders i:nth-child(4) { display: none; }
 
-.module-nexus .module-icon::before {
+.icon-nodes::before {
   position: absolute;
   inset: 13% 7% 12%;
   background: currentColor;
@@ -52,7 +52,7 @@
   content: "";
 }
 
-.module-nexus i {
+.icon-nodes i {
   position: absolute;
   width: 27%;
   aspect-ratio: 1;
@@ -61,12 +61,12 @@
   background: #160b24;
 }
 
-.module-nexus i:nth-child(1) { top: 0; left: 36.5%; }
-.module-nexus i:nth-child(2) { bottom: 0; left: 0; }
-.module-nexus i:nth-child(3) { bottom: 0; right: 0; }
-.module-nexus i:nth-child(4) { display: none; }
+.icon-nodes i:nth-child(1) { top: 0; left: 36.5%; }
+.icon-nodes i:nth-child(2) { bottom: 0; left: 0; }
+.icon-nodes i:nth-child(3) { bottom: 0; right: 0; }
+.icon-nodes i:nth-child(4) { display: none; }
 
-.module-lens .module-icon {
+.icon-aperture {
   border-radius: 50%;
   background: repeating-conic-gradient(from -12deg, currentColor 0deg 48deg, transparent 48deg 60deg);
   mask-image: radial-gradient(circle, transparent 25%, #000 26%, #000 68%, transparent 69%);
