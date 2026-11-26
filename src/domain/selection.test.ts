@@ -1,7 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ModuleOpenSettled } from './events'
-import { openModule } from './launcher'
+import type { OpenModuleCommand } from './commands'
 import { createModuleSelection, orbitalTransitionMs, type ModuleSelection } from './selection'
+
+function openModule({ moduleId, requestId }: OpenModuleCommand): ModuleOpenSettled {
+  return { type: 'module.open.settled', moduleId, requestId, result: { status: 'not-configured' } }
+}
 
 describe('orbital selection', () => {
   beforeEach(() => vi.useFakeTimers())
@@ -80,7 +84,7 @@ describe('orbital selection', () => {
         type: 'module.open.settled',
         moduleId: 'lens',
         requestId: 1,
-        result: { status: 'failed', reason: 'platform-error' },
+        result: { status: 'error', reason: 'platform' },
       },
     })
   })

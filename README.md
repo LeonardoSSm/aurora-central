@@ -1,6 +1,6 @@
 # Aurora Central
 
-Home desktop do Aurora Ecosystem, com um núcleo volumétrico de partículas 3D e quatro módulos orbitais. Board, Control, Nexus e Lens informam sua indisponibilidade ao serem acionados.
+Home desktop do Aurora Ecosystem, com um núcleo volumétrico de partículas 3D e um launcher para Board, Control, Nexus e Lens.
 
 ## Requisitos
 
@@ -23,6 +23,8 @@ npm run tauri dev
 Na home, use os botões de visualização ou `Alt+1`, `Alt+2` e `Alt+3` para abrir os modos Central, Imersivo e Ambiental. `Esc` volta à Central, cancela uma seleção em curso e sai da tela cheia. `F11` alterna a tela cheia. No modo Ambiental, mover o ponteiro, tocar ou focar o botão com Tab revela **Voltar à Central**.
 
 Abra **Demonstração do núcleo** no rodapé da home para testar os oito estados e ajustar perfil, FPS e DPR. As opções gráficas também se aplicam à home durante a sessão. O controle de amplitude fica disponível no estado **Falando**.
+
+No desktop, abra **Aplicativos** e escolha um módulo. Use **Selecionar executável** e confirme o arquivo no diálogo nativo. Depois, acione o módulo na órbita ou use **Testar abertura**. No Windows, a configuração inclui o monitor para aplicativos que permitem posicionamento pelo Central. [Integração de aplicativos](docs/application-integration.md)
 
 ## Verificação e build
 
@@ -47,3 +49,6 @@ O build gera o executável em `src-tauri/target/release/`. Windows usa `aurora-c
 - [Motor gráfico](docs/graphics-engine.md)
 - [Relatório e evidências do Ciclo 02](docs/cycle-02.md)
 - [Relatório e evidências do Ciclo 03](docs/cycle-03.md)
+- [Integração de aplicativos](docs/application-integration.md)
+- [Segurança do launcher](docs/security.md)
+- [Relatório e evidências do Ciclo 04](docs/cycle-04.md)

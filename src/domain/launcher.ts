@@ -1,13 +1,14 @@
 import type { OpenModuleCommand } from './commands'
-import type { ModuleOpenSettled } from './events'
+import type { ModuleOpenResult, ModuleOpenSettled } from './events'
+import type { ModuleId } from './registry'
 
 export type ModuleLauncher = (command: OpenModuleCommand) => ModuleOpenSettled | Promise<ModuleOpenSettled>
 
-export function openModule(command: OpenModuleCommand): ModuleOpenSettled {
-  return {
-    type: 'module.open.settled',
-    moduleId: command.moduleId,
-    requestId: command.requestId,
-    result: { status: 'unavailable' },
+export function createModuleLauncher(
+  open: (moduleId: ModuleId) => Promise<ModuleOpenResult>,
+): ModuleLauncher {
+  return async ({ moduleId, requestId }) => {
+    const result = await open(moduleId)
+    return { type: 'module.open.settled', moduleId, requestId, result }
   }
 }
