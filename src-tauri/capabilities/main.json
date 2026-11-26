@@ -1,7 +1,14 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main-local",
-  "description": "Permite alterar a tela cheia da janela local.",
+  "description": "Permite tela cheia e operações específicas do launcher na janela local.",
   "windows": ["main"],
-  "permissions": ["core:window:allow-set-fullscreen"]
+  "permissions": [
+    "core:window:allow-set-fullscreen",
+    "allow-launcher-snapshot",
+    "allow-launcher-open",
+    "allow-launcher-choose-executable",
+    "allow-launcher-remove-executable",
+    "allow-launcher-choose-monitor"
+  ]
 }

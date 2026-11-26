@@ -1,0 +1,43 @@
+.launcher-settings {
+  width: min(540px, calc(100% - 36px));
+  max-height: calc(100% - 40px);
+  padding: 21px;
+  border: 1px solid #503351;
+  border-radius: 14px;
+  background: #100b13;
+  color: #f9f1fa;
+  box-shadow: 0 12px 52px #000b;
+  font-size: 13px;
+}
+
+.launcher-settings::backdrop { background: #030205b8; }
+.launcher-settings header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.launcher-settings h2 { margin: 0; font-size: 19px; font-weight: 550; }
+.launcher-settings label { display: block; margin: 14px 0 5px; font-weight: 550; }
+
+.launcher-settings select,
+.launcher-actions button {
+  min-height: 34px;
+  padding: 5px 10px;
+  border: 1px solid #513952;
+  border-radius: 5px;
+  background: #1c1220;
+  color: inherit;
+  font: inherit;
+}
+
+.launcher-settings select { width: 100%; }
+.launcher-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+.launcher-actions button:not(:disabled) { cursor: pointer; }
+.launcher-actions button:enabled:hover { background: #2e1b34; }
+.launcher-settings :disabled { opacity: .55; }
+.launcher-settings :focus-visible { outline: 2px solid #eb75b7; outline-offset: 2px; }
+.launcher-installation { margin: 11px 0; }
+.launcher-installation p { margin: 5px 0; }
+.launcher-path { color: #c3afc9; overflow-wrap: anywhere; }
+.launcher-detail { margin: 8px 0; color: #c3afc9; }
+.launcher-settings details { margin-top: 10px; color: #d4bfd8; }
+.launcher-settings summary { width: fit-content; cursor: pointer; }
+.launcher-settings ul { margin: 7px 0; padding-left: 19px; }
+.launcher-settings li + li { margin-top: 4px; }
+.launcher-message { min-height: 16px; margin: 12px 0 0; color: #efbae4; }

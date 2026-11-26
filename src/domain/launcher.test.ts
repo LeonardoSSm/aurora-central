@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { openModule } from './launcher'
+import { createModuleLauncher } from './launcher'
 import { modules } from './registry'
 import { moduleNotice } from './state'
 
@@ -9,14 +9,24 @@ describe('registry and launcher', () => {
     expect(new Set(modules.map(({ angle }) => angle)).size).toBe(4)
   })
 
-  it.each(modules)('reports the actual availability of $name', ({ id, availability }) => {
-    const event = openModule({ type: 'module.open', moduleId: id, requestId: 1 })
+  it.each(modules)('correlates the adapter result for $name', async ({ id }) => {
+    const openModule = createModuleLauncher(async (selected) => {
+      expect(selected).toBe(id)
+      return { status: 'not-configured' }
+    })
+    const event = await openModule({ type: 'module.open', moduleId: id, requestId: 1 })
     expect(event).toEqual({
       type: 'module.open.settled',
       moduleId: id,
       requestId: 1,
-      result: { status: availability },
+      result: { status: 'not-configured' },
     })
-    expect(moduleNotice(event)).toBe('Abertura indisponível nesta versão.')
+    expect(moduleNotice(event.result)).toBe('Nenhum executável configurado.')
+  })
+
+  it('distinguishes observed foreground from a pending request', () => {
+    expect(moduleNotice({ status: 'focus-requested', focus: 'confirmed' })).toBe('Foco confirmado.')
+    expect(moduleNotice({ status: 'focus-requested', focus: 'requested' })).toContain('Foco solicitado.')
+    expect(moduleNotice({ status: 'focus-requested', focus: 'denied' })).toContain('recusou')
   })
 })

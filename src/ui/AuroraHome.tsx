@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from 'react'
-import { openModule } from '../domain/launcher'
+import { desktopAvailable, openRegisteredModule } from '../desktop/platform'
+import type { useLauncherSnapshot } from '../desktop/useLauncherSnapshot'
+import { createModuleLauncher } from '../domain/launcher'
 import type { ModuleId } from '../domain/registry'
 import { createModuleSelection, orbitalTransitionMs, type ModuleSelection } from '../domain/selection'
 import { moduleNotice } from '../domain/state'
 import { ParticleCore } from '../graphics/ParticleCore'
 import type { GraphicsSettings } from '../graphics/profiles'
 import { OrbitalConnections } from './OrbitalConnections'
+import { LauncherSettings } from './LauncherSettings'
 import { orbitLayout, type OrbitLayout } from './orbitLayout'
 import { ViewControls, viewModes, type ViewMode } from './ViewControls'
 
 const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
+const openModule = createModuleLauncher(openRegisteredModule)
 
 function subscribeToMotion(onChange: () => void) {
   motion.addEventListener('change', onChange)
@@ -20,15 +24,17 @@ interface Props {
   settings: GraphicsSettings
   fullscreen: boolean
   onToggleFullscreen: () => void
+  launcher: ReturnType<typeof useLauncherSnapshot>
 }
 
-export function AuroraHome({ settings, fullscreen, onToggleFullscreen }: Props) {
+export function AuroraHome({ settings, fullscreen, onToggleFullscreen, launcher }: Props) {
   const [mode, setMode] = useState<ViewMode>('central')
   const [hovered, setHovered] = useState<ModuleId>()
   const [focused, setFocused] = useState<ModuleId>()
   const [selection, setSelection] = useState<ModuleSelection>(null)
   const [controller] = useState(() => createModuleSelection(openModule, setSelection))
   const [layout, setLayout] = useState<OrbitLayout>()
+  const [configuring, setConfiguring] = useState(false)
   const scene = useRef<HTMLElement>(null)
   const modeControl = useRef<HTMLButtonElement>(null)
   const restoreFocus = useRef(false)
@@ -77,7 +83,7 @@ export function AuroraHome({ settings, fullscreen, onToggleFullscreen }: Props) 
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (event.repeat || event.ctrlKey || event.metaKey || event.shiftKey) return
+      if (configuring || event.repeat || event.ctrlKey || event.metaKey || event.shiftKey) return
       if (event.key === 'Escape' && !event.altKey) {
         if (mode === 'central') controller.dismiss()
         else changeMode('central')
@@ -92,7 +98,7 @@ export function AuroraHome({ settings, fullscreen, onToggleFullscreen }: Props) 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
 
-  }, [controller, changeMode, mode])
+  }, [controller, changeMode, configuring, mode])
 
   return (
     <main className="home" data-mode={mode} style={{ '--orbital-duration': `${orbitalTransitionMs}ms` } as CSSProperties}>
@@ -122,7 +128,7 @@ export function AuroraHome({ settings, fullscreen, onToggleFullscreen }: Props) 
                     className="module"
                     type="button"
                     aria-label={`Aurora ${module.name}`}
-                    aria-describedby={module.availability === 'unavailable' ? 'module-availability' : undefined}
+                    aria-describedby={`availability-${module.id}`}
                     onPointerEnter={(event) => { if (event.pointerType === 'mouse' || event.pointerType === 'pen') setHovered(module.id) }}
                     onPointerLeave={() => setHovered(undefined)}
                     onFocus={(event) => { if (event.currentTarget.matches(':focus-visible')) setFocused(module.id) }}
@@ -134,6 +140,10 @@ export function AuroraHome({ settings, fullscreen, onToggleFullscreen }: Props) 
                     </span>
                     <span className="module-name"><small>Aurora</small>{module.name}</span>
                   </button>
+                  <span id={`availability-${module.id}`} className="sr-only">
+                    {moduleNotice(launcher.snapshot?.applications.find((app) => app.id === module.id)?.state
+                      ?? { status: desktopAvailable() ? 'unavailable' : 'browser' })}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -142,15 +152,24 @@ export function AuroraHome({ settings, fullscreen, onToggleFullscreen }: Props) 
       </section>
 
       <footer className="home-footer">
-        <p id="module-availability" className="sr-only">Abertura de aplicativos indisponível nesta versão.</p>
         <p className="status" role="status">
+          {selection?.phase === 'opening' && <span>Verificando abertura…</span>}
           {result && selectedModule && (
-            <span key={result.requestId}><strong>Aurora {selectedModule.name}</strong> {moduleNotice(result)}</span>
+            <span key={result.requestId}><strong>Aurora {selectedModule.name}</strong> {moduleNotice(result.result)}</span>
           )}
         </p>
-        {mode === 'central' && <a href="#/nucleo" className="core-link home-core-link">Demonstração do núcleo</a>}
+        {mode === 'central' && <div className="home-links">
+          <a href="#/nucleo" className="core-link">Demonstração do núcleo</a>
+          {desktopAvailable() && <button className="core-link settings-link" type="button" aria-haspopup="dialog"
+            onClick={() => {
+              controller.dismiss()
+              setConfiguring(true)
+            }}>Aplicativos</button>}
+        </div>}
         <ViewControls mode={mode} fullscreen={fullscreen} modeControl={modeControl} onChange={changeMode} onToggleFullscreen={onToggleFullscreen} />
       </footer>
+      {configuring && <LauncherSettings snapshot={launcher.snapshot} failed={launcher.failed}
+        onRefresh={launcher.refresh} onDismiss={() => setConfiguring(false)} />}
     </main>
   )
 }

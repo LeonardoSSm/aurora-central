@@ -230,7 +230,7 @@ body { margin: 0; }
   grid-row: 3;
   z-index: 4;
   display: grid;
-  grid-template-rows: 24px 19px 42px;
+  grid-template-rows: 28px 19px 38px;
   justify-items: center;
   width: 100%;
   text-align: center;
@@ -241,6 +241,7 @@ body { margin: 0; }
   margin: 0;
   color: #cbbbd1;
   font-size: 13px;
+  line-height: 1.08;
 }
 
 .status strong { color: #f4dcf1; font-weight: 600; margin-right: 5px; }
@@ -252,7 +253,15 @@ body { margin: 0; }
   text-underline-offset: 3px;
 }
 
-.home-core-link { grid-row: 2; align-self: start; }
+.home-links { grid-row: 2; align-self: start; display: flex; align-items: center; gap: 15px; }
+.settings-link {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font-family: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
 
 .view-controls,
 .ambient-exit {

@@ -52,7 +52,7 @@ export function createModuleSelection(
         type: 'module.open.settled',
         moduleId: command.moduleId,
         requestId: command.requestId,
-        result: { status: 'failed', reason: 'platform-error' },
+        result: { status: 'error', reason: 'platform' },
       })
     }
   }
