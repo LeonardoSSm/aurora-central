@@ -1,5 +1,6 @@
 import { expect, it } from 'vitest'
 import { FramePacer, frameLimit } from './pacing'
+import { defaultGraphics, renderScale } from './profiles'
 
 it('limits draws at a nondivisible refresh rate without drift', () => {
   const pacer = new FramePacer()
@@ -8,6 +9,22 @@ it('limits draws at a nondivisible refresh rate without drift', () => {
     if (pacer.ready(frame * 1000 / 144, 60)) frames += 1
   }
   expect(frames).toBe(600)
+})
+
+it('supports opt-in policies for an unfocused window while always stopping hidden draws', () => {
+  expect(frameLimit(60, false, false, false, false, 'pause')).toBe(0)
+  expect(frameLimit(60, false, false, true, false, 'continue')).toBe(60)
+  expect(frameLimit(60, true, false, false, false, 'continue')).toBe(0)
+  expect(frameLimit(60, false, false, false, true, 'continue')).toBe(20)
+})
+
+it('combines render resolution and DPR and caps large drawing buffers', () => {
+  expect(renderScale(500, 500, 2, defaultGraphics)).toBe(1.5)
+  expect(renderScale(500, 500, 1, { ...defaultGraphics, resolution: 50 })).toBe(0.5)
+  const side = 8192 * renderScale(8192, 8192, 2, defaultGraphics)
+  expect(side).toBeLessThan(4096)
+  expect(Math.floor(side) ** 2).toBeLessThanOrEqual(8_388_608)
+  expect(16_384 * renderScale(16_384, 400, 2, defaultGraphics)).toBe(4096)
 })
 
 it('drops missed deadlines and resets when the frame limit changes', () => {

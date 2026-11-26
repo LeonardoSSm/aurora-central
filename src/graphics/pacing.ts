@@ -1,8 +1,12 @@
+import type { BackgroundMode } from './profiles'
+
 export const inactivityDelay = 45_000
 
-export function frameLimit(fps: number, hidden: boolean, focused: boolean, inactive: boolean, sleeping: boolean) {
-  if (hidden) return 0
-  if (!focused || sleeping) return Math.min(fps, 20)
+export function frameLimit(fps: number, hidden: boolean, focused: boolean, inactive: boolean, sleeping: boolean,
+  background: BackgroundMode = 'adaptive') {
+  if (hidden || (!focused && background === 'pause')) return 0
+  if (sleeping || (!focused && background === 'adaptive')) return Math.min(fps, 20)
+  if (!focused) return fps
   return inactive ? Math.min(fps, 30) : fps
 }
 

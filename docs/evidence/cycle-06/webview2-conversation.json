@@ -1,0 +1,36 @@
+{
+  "webview": "Edg/158.0.4370.33",
+  "origin": "http://tauri.localhost",
+  "renderer": "webgl",
+  "viewports": [
+    [
+      1280,
+      800
+    ],
+    [
+      480,
+      560
+    ]
+  ],
+  "textStreaming": true,
+  "simulatedTranscription": true,
+  "voiceCancellation": true,
+  "sleepAndWake": true,
+  "syntheticConfirmationRejected": true,
+  "refusal": true,
+  "launcherNotice": "Aurora Board · Nenhum executável configurado.",
+  "recognition": {
+    "availability": "unavailable",
+    "notice": "O reconhecimento local em português está indisponível neste dispositivo."
+  },
+  "playback": {
+    "state": "success",
+    "notice": "Concluído.",
+    "localPortugueseVoices": [
+      "pt-BR",
+      "pt-BR"
+    ],
+    "speakingObserved": true
+  },
+  "browserErrors": []
+}

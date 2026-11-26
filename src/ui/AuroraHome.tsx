@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from 'react'
 import { desktopAvailable, openRegisteredModule } from '../desktop/platform'
+import type { Settings, SettingsSnapshot } from '../desktop/persistence'
 import type { useLauncherSnapshot } from '../desktop/useLauncherSnapshot'
 import { createModuleLauncher } from '../domain/launcher'
 import type { ModuleId } from '../domain/registry'
@@ -14,7 +15,7 @@ import { createCommandRegistry } from '../intelligence/registry'
 import { simulatedAssistant, simulatedSpeech } from '../intelligence/simulation'
 import { ConversationPanel } from './ConversationPanel'
 import { OrbitalConnections } from './OrbitalConnections'
-import { LauncherSettings } from './LauncherSettings'
+import { SettingsDialog, type SettingsCategory } from './SettingsDialog'
 import { orbitLayout, type OrbitLayout } from './orbitLayout'
 import { ViewControls, viewModes, type ViewMode } from './ViewControls'
 
@@ -26,32 +27,36 @@ function subscribeToMotion(onChange: () => void) {
   return () => motion.removeEventListener('change', onChange)
 }
 
-function HomeCore({ conversation, orbitalExecution, orbitEnergy, settings }: {
+function HomeCore({ conversation, orbitalExecution, orbitEnergy, settings, reduced }: {
   conversation: Conversation
   orbitalExecution: boolean
   orbitEnergy: CoreInput['orbitEnergy']
   settings: GraphicsSettings
+  reduced: boolean
 }) {
   const { state, amplitude } = useSyncExternalStore(conversation.subscribe, conversation.getSnapshot)
   return <ParticleCore state={orbitalExecution ? 'executing' : state}
-    amplitude={amplitude} orbitEnergy={orbitEnergy} settings={settings} />
+    amplitude={amplitude} orbitEnergy={orbitEnergy} settings={settings} reduced={reduced} />
 }
 
 interface Props {
-  settings: GraphicsSettings
+  snapshot: SettingsSnapshot
+  demoGraphics?: GraphicsSettings
+  onSaveSettings: (settings: Settings, revision: number) => Promise<SettingsSnapshot>
   fullscreen: boolean
   onToggleFullscreen: () => void
   launcher: ReturnType<typeof useLauncherSnapshot>
 }
 
-export function AuroraHome({ settings, fullscreen, onToggleFullscreen, launcher }: Props) {
-  const [mode, setMode] = useState<ViewMode>('central')
+export function AuroraHome({ snapshot, demoGraphics, onSaveSettings, fullscreen, onToggleFullscreen, launcher }: Props) {
+  const [mode, setMode] = useState<ViewMode>(snapshot.settings.initialView)
   const [hovered, setHovered] = useState<ModuleId>()
   const [focused, setFocused] = useState<ModuleId>()
   const [selection, setSelection] = useState<ModuleSelection>(null)
   const [controller] = useState(() => createModuleSelection(openModule, setSelection))
   const [layout, setLayout] = useState<OrbitLayout>()
-  const [configuring, setConfiguring] = useState(false)
+  const [configuring, setConfiguring] = useState<SettingsCategory>()
+  const [preview, setPreview] = useState<Settings>()
   const [conversing, setConversing] = useState(false)
   const [conversation] = useState(() => createConversation({
     assistant: simulatedAssistant,
@@ -64,7 +69,17 @@ export function AuroraHome({ settings, fullscreen, onToggleFullscreen, launcher 
   const modeControl = useRef<HTMLButtonElement>(null)
   const conversationToggle = useRef<HTMLButtonElement>(null)
   const restoreFocus = useRef(false)
-  const reduced = useSyncExternalStore(subscribeToMotion, () => motion.matches)
+  const systemReduced = useSyncExternalStore(subscribeToMotion, () => motion.matches)
+  const forceReduced = (preview ?? snapshot.settings).motion === 'reduced'
+  const reduced = forceReduced || systemReduced
+  const settings = preview?.graphics ?? demoGraphics ?? snapshot.settings.graphics
+
+  function openSettings(category: SettingsCategory) {
+    controller.dismiss()
+    if (conversing) closeConversation()
+    setPreview(snapshot.settings)
+    setConfiguring(category)
+  }
   const command = selection && 'command' in selection ? selection.command : undefined
   const pulse = selection?.phase === 'transitioning' ? selection.command : undefined
   const result = selection?.phase === 'settled' ? selection.event : undefined
@@ -150,7 +165,7 @@ export function AuroraHome({ settings, fullscreen, onToggleFullscreen, launcher 
   }, [controller, changeMode, configuring, conversing, dismissConversation, mode])
 
   return (
-    <main className="home" data-mode={mode} data-conversing={conversing}
+    <main className="home" data-mode={mode} data-conversing={conversing} data-reduced={reduced}
       style={{ '--orbital-duration': `${orbitalTransitionMs}ms` } as CSSProperties}>
       <header className={mode === 'central' ? 'brand' : 'sr-only'}>
         <span className="brand-mark" aria-hidden="true" />
@@ -164,6 +179,7 @@ export function AuroraHome({ settings, fullscreen, onToggleFullscreen, launcher 
           orbitalExecution={Boolean(command && !reduced)}
           orbitEnergy={direction && { x: direction.x * strength, y: direction.y * strength }}
           settings={settings}
+          reduced={forceReduced}
         />
         {mode !== 'ambiental' && layout && (
           <>
@@ -186,7 +202,7 @@ export function AuroraHome({ settings, fullscreen, onToggleFullscreen, launcher 
                     onBlur={() => setFocused(undefined)}
                     onClick={() => {
                       if (conversing) closeConversation()
-                      controller.select(module.id, !motion.matches)
+                      controller.select(module.id, !reduced)
                     }}
                   >
                     <span className={`module-icon icon-${module.icon}`} aria-hidden="true">
@@ -227,16 +243,17 @@ export function AuroraHome({ settings, fullscreen, onToggleFullscreen, launcher 
             }}>Conversa</button>
           <a href="#/nucleo" className="core-link">Demonstração do núcleo</a>
           {desktopAvailable() && <button className="core-link settings-link" type="button" aria-haspopup="dialog"
-            onClick={() => {
-              controller.dismiss()
-              if (conversing) closeConversation()
-              setConfiguring(true)
-            }}>Aplicativos</button>}
+            onClick={() => openSettings('applications')}>Aplicativos</button>}
+          <button className="core-link settings-link" type="button" aria-haspopup="dialog"
+            onClick={() => openSettings('general')}>Configurações</button>
         </div>}
         <ViewControls mode={mode} fullscreen={fullscreen} modeControl={modeControl} onChange={changeMode} onToggleFullscreen={onToggleFullscreen} />
       </footer>
-      {configuring && <LauncherSettings snapshot={launcher.snapshot} failed={launcher.failed}
-        onRefresh={launcher.refresh} onDismiss={() => setConfiguring(false)} />}
+      {configuring && <SettingsDialog initialCategory={configuring} snapshot={snapshot} launcher={launcher}
+        onPreview={setPreview} onSave={onSaveSettings} onDismiss={() => {
+          setPreview(undefined)
+          setConfiguring(undefined)
+        }} />}
     </main>
   )
 }

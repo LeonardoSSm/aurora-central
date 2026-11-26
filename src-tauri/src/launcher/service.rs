@@ -1,8 +1,14 @@
 use std::{
     collections::BTreeMap,
+    fs::File,
     path::Path,
     process::Child,
     time::{Duration, Instant},
+};
+
+use crate::{
+    settings::{Opening, Settings, SettingsError, SettingsManager, Snapshot as SettingsSnapshot},
+    storage,
 };
 
 use super::{
@@ -35,17 +41,43 @@ struct Lifecycle {
 
 pub struct Launcher {
     store: Option<Store>,
+    settings: SettingsManager,
     apps: BTreeMap<AppId, Lifecycle>,
     detached: Vec<Child>,
+    _profile_lock: Option<File>,
 }
 
 impl Launcher {
     pub fn load(path: Option<&Path>) -> Self {
+        // Keep the original lock name so a concurrent older Central also respects ownership.
+        let profile_lock = path.and_then(|path| storage::lock(path, "launcher.lock").ok());
+        let path = path.filter(|_| profile_lock.is_some());
+        let store = path.and_then(|path| Store::load(path).ok());
+        let settings = SettingsManager::load(path, |id| store.as_ref()?.get(id)?.monitor.clone());
         Self {
-            store: path.and_then(|path| Store::load(path).ok()),
+            store,
+            settings,
             apps: BTreeMap::new(),
             detached: Vec::new(),
+            _profile_lock: profile_lock,
         }
+    }
+
+    pub fn settings(&self) -> SettingsSnapshot {
+        self.settings.snapshot()
+    }
+
+    pub fn save_settings(
+        &mut self,
+        settings: Settings,
+        revision: u32,
+        displays: &[Display],
+    ) -> Result<SettingsSnapshot, SettingsError> {
+        self.settings.save(settings, revision, |preferred| {
+            displays
+                .iter()
+                .any(|display| display.info.id.as_ref() == Some(preferred))
+        })
     }
 
     pub fn can_configure(&self) -> Result<(), Fault> {
@@ -105,10 +137,23 @@ impl Launcher {
         }) {
             return Err(Fault::InvalidMonitor);
         }
-        let store = self.store.as_mut().ok_or(Fault::Storage)?;
-        let mut approval = store.get(id).cloned().ok_or(Fault::InvalidExecutable)?;
-        approval.monitor = preferred;
-        store.save(id, Some(approval))
+        self.store
+            .as_ref()
+            .ok_or(Fault::Storage)?
+            .get(id)
+            .ok_or(Fault::InvalidExecutable)?;
+        let SettingsSnapshot {
+            mut settings,
+            revision,
+            ..
+        } = self.settings();
+        settings.modules.get_mut(&id).unwrap().preferred_monitor = preferred;
+        self.save_settings(settings, revision, monitors)
+            .map(|_| ())
+            .map_err(|error| match error {
+                SettingsError::Invalid | SettingsError::InvalidMonitor => Fault::InvalidMonitor,
+                _ => Fault::Storage,
+            })
     }
 
     pub fn snapshot(&mut self, monitors: &[Display]) -> Snapshot {
@@ -147,7 +192,7 @@ impl Launcher {
                 Application {
                     id,
                     executable: approval.map(|entry| display_path(&entry.path)),
-                    preferred_monitor: approval.and_then(|entry| entry.monitor.clone()),
+                    preferred_monitor: self.settings.module(id).preferred_monitor.clone(),
                     strategy: integration.strategy,
                     capabilities: integration.capabilities(environment),
                     state,
@@ -175,6 +220,7 @@ impl Launcher {
         let Some(approval) = store.get(id) else {
             return ApplicationState::NotConfigured;
         };
+        let settings = self.settings.module(id);
         let runtime = self.apps.entry(id).or_default();
         runtime.poll_exit();
         let executable = match Executable::authorize(approval) {
@@ -192,10 +238,16 @@ impl Launcher {
         let matching = processes.matching(&approval.path);
         if !matching.is_empty() || runtime.started.is_some() {
             let state = runtime.observe(&matching, monitors, environment);
+            if !settings.focus_existing {
+                return state;
+            }
             let focus = matching
                 .iter()
                 .find_map(|process| process.window()?.request_focus());
             return focus.map_or(state, |focus| ApplicationState::FocusRequested { focus });
+        }
+        if settings.opening == Opening::RunningOnly {
+            return ApplicationState::NotRunning;
         }
 
         let integration = id.integration();
@@ -205,7 +257,7 @@ impl Launcher {
                 runtime.started = Some(Started {
                     child,
                     at: Instant::now(),
-                    preferred: approval.monitor.clone(),
+                    preferred: settings.preferred_monitor.clone(),
                     placement: Placement::NotRequested,
                     strategy: integration.strategy,
                 });

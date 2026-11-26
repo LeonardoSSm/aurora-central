@@ -337,6 +337,7 @@ body { margin: 0; }
   .scene .core { width: min(97cqw, 80cqh); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .orbit, .orbit *, .module, .ambient-exit { animation: none !important; transition: none !important; }
+.home[data-reduced="true"] :is(.orbit, .orbit *, .module, .ambient-exit) {
+  animation: none !important;
+  transition: none !important;
 }

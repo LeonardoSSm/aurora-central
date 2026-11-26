@@ -1,7 +1,10 @@
 .launcher-settings {
-  width: min(540px, calc(100% - 36px));
-  max-height: calc(100% - 40px);
-  padding: 21px;
+  inset: 16px 16px 16px auto;
+  width: min(438px, calc(100% - 32px));
+  max-width: none;
+  max-height: calc(100% - 32px);
+  margin: auto 0;
+  padding: 18px 20px;
   border: 1px solid #503351;
   border-radius: 14px;
   background: #100b13;
@@ -10,10 +13,34 @@
   font-size: 13px;
 }
 
-.launcher-settings::backdrop { background: #030205b8; }
-.launcher-settings header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.launcher-settings[open] { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; }
+.launcher-settings::backdrop { background: #03020542; }
+.launcher-settings header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .launcher-settings h2 { margin: 0; font-size: 19px; font-weight: 550; }
-.launcher-settings label { display: block; margin: 14px 0 5px; font-weight: 550; }
+.launcher-settings h3 { margin: 0 0 10px; font-size: 14px; font-weight: 600; }
+.settings-nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.settings-nav button {
+  min-height: 32px;
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: #1b1120;
+  color: #d4bfd8;
+  font: inherit;
+  cursor: pointer;
+}
+.settings-nav button:hover { background: #2a1b31; }
+.settings-nav button[aria-pressed="true"] { border-color: #80507a; color: #fff0fa; background: #302035; }
+.settings-content { margin: 14px -5px 0; padding: 0 5px 8px; overflow: auto; scrollbar-color: #614762 #100b13; }
+.settings-content fieldset { min-width: 0; padding: 0; margin: 0; border: 0; }
+.launcher-settings label { display: block; margin: 11px 0 5px; font-weight: 550; }
+.settings-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 10px; }
+.settings-grid select { margin-top: 5px; }
+.launcher-settings .settings-range { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px; }
+.settings-range output { color: #e7bce0; font-variant-numeric: tabular-nums; }
+.settings-range input { grid-column: 1 / -1; width: 100%; margin: 0; }
+.launcher-settings input { accent-color: #e99cd2; }
+.launcher-settings .settings-checkbox { display: flex; align-items: center; gap: 7px; }
 
 .launcher-settings select,
 .launcher-actions button {
@@ -41,3 +68,20 @@
 .launcher-settings ul { margin: 7px 0; padding-left: 19px; }
 .launcher-settings li + li { margin-top: 4px; }
 .launcher-message { min-height: 16px; margin: 12px 0 0; color: #efbae4; }
+.settings-footer { border-top: 1px solid #3e2a43; }
+.settings-feedback { min-height: 16px; margin: 8px 0; color: #efbae4; }
+.settings-footer .launcher-actions { justify-content: space-between; }
+.launcher-actions .settings-apply:enabled { background: #62395c; border-color: #9c658e; }
+.launcher-actions .settings-apply:enabled:hover { background: #784570; }
+
+@media (max-width: 850px) {
+  .launcher-settings {
+    inset: auto 10px 10px;
+    margin: 0 auto;
+    width: min(510px, calc(100% - 20px));
+    max-height: min(57svh, calc(100% - 20px));
+    padding: 12px 14px;
+  }
+  .launcher-settings header { margin-bottom: 6px; }
+  .settings-content { margin-top: 10px; }
+}

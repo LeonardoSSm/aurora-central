@@ -1,10 +1,10 @@
 import { Vector2 } from 'three'
 import { CoreMotion, smooth, type CoreInput } from './behavior'
 import { FramePacer, frameLimit, inactivityDelay } from './pacing'
-import { type GraphicsSettings } from './profiles'
+import { renderScale, type GraphicsSettings } from './profiles'
 import { createParticleRenderer } from './renderer'
 
-export function runCore(canvas: HTMLCanvasElement, input: CoreInput, settings: GraphicsSettings) {
+export function runCore(canvas: HTMLCanvasElement, input: CoreInput, settings: GraphicsSettings, forceReduced: boolean) {
   const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
   const motion = new CoreMotion()
   const pointer = new Vector2()
@@ -18,7 +18,7 @@ export function runCore(canvas: HTMLCanvasElement, input: CoreInput, settings: G
   let lastDraw: number | undefined
   let lastInput = performance.now()
   let dimensions = { width: 0, height: 0, dpr: 0 }
-  let reduced = motionPreference.matches
+  let reduced = forceReduced || motionPreference.matches
   let contextLost = false
   let renderFailed = false
 
@@ -27,6 +27,7 @@ export function runCore(canvas: HTMLCanvasElement, input: CoreInput, settings: G
   function limit(now: number) {
     return frameLimit(
       settings.fps, document.hidden, document.hasFocus(), now - lastInput >= inactivityDelay, input.state === 'sleep',
+      settings.background,
     )
   }
 
@@ -39,7 +40,7 @@ export function runCore(canvas: HTMLCanvasElement, input: CoreInput, settings: G
 
   function draw(seconds: number) {
     if (!renderer || contextLost || renderFailed || document.hidden || !dimensions.width || !dimensions.height) return
-    motion.advance(seconds, reduced)
+    motion.advance(seconds * settings.speed / 100, reduced)
     pointer.set(smooth(pointer.x, destination.x, seconds, 0.28), smooth(pointer.y, destination.y, seconds, 0.28))
     orbitEnergy.set(
       reduced ? 0 : smooth(orbitEnergy.x, input.orbitEnergy?.x ?? 0, seconds, 0.21),
@@ -53,7 +54,7 @@ export function runCore(canvas: HTMLCanvasElement, input: CoreInput, settings: G
     if (!renderer || contextLost) return
     const width = canvas.clientWidth
     const height = canvas.clientHeight
-    const dpr = Math.min(window.devicePixelRatio || 1, settings.dpr)
+    const dpr = renderScale(width, height, window.devicePixelRatio || 1, settings)
     if (!width || !height) {
       dimensions = { width, height, dpr }
       return
@@ -89,11 +90,11 @@ export function runCore(canvas: HTMLCanvasElement, input: CoreInput, settings: G
     stop()
     if (!renderer || contextLost || renderFailed || document.hidden) return
     if (reduced) draw(0)
-    else raf = window.requestAnimationFrame(tick)
+    else if (limit(performance.now())) raf = window.requestAnimationFrame(tick)
   }
 
   function changeMotionPreference(event: MediaQueryListEvent) {
-    reduced = event.matches
+    reduced = forceReduced || event.matches
     sync()
   }
 
@@ -139,7 +140,7 @@ export function runCore(canvas: HTMLCanvasElement, input: CoreInput, settings: G
     try {
       renderer ??= createParticleRenderer(canvas)
       renderer?.restored()
-      renderer?.setProfile(settings.profile)
+      renderer?.configure(settings)
       resize(true)
       sync()
     } catch (error) {
@@ -175,18 +176,24 @@ export function runCore(canvas: HTMLCanvasElement, input: CoreInput, settings: G
   restore()
 
   return {
-    update(nextInput: CoreInput, nextSettings: GraphicsSettings) {
+    update(nextInput: CoreInput, nextSettings: GraphicsSettings, nextReduced: boolean) {
       const profileChanged = settings.profile !== nextSettings.profile
-      const sizeChanged = profileChanged || settings.dpr !== nextSettings.dpr
-      const pacingChanged = settings.fps !== nextSettings.fps
+      const sizeChanged = profileChanged || settings.dpr !== nextSettings.dpr || settings.resolution !== nextSettings.resolution
+      const appearanceChanged = profileChanged || settings.palette !== nextSettings.palette || settings.quality !== nextSettings.quality
+        || settings.brightness !== nextSettings.brightness || settings.particleCount !== nextSettings.particleCount
+      const pacingChanged = settings.fps !== nextSettings.fps || forceReduced !== nextReduced
+        || settings.background !== nextSettings.background
         || (input.state === 'sleep') !== (nextInput.state === 'sleep')
       const stateChanged = input.state !== nextInput.state
       settings = nextSettings
       input = nextInput
+      forceReduced = nextReduced
+      reduced = forceReduced || motionPreference.matches
       motion.setInput(input)
-      if (profileChanged) renderer?.setProfile(settings.profile)
+      if (appearanceChanged && !contextLost) renderer?.configure(settings)
       if (sizeChanged) resize(true)
-      if (pacingChanged || (stateChanged && reduced && !sizeChanged)) sync()
+      else if (appearanceChanged || (stateChanged && reduced && !pacingChanged)) draw(0)
+      if (pacingChanged) sync()
     },
     dispose() {
       stop()

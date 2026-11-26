@@ -1,12 +1,19 @@
 import {
   BufferAttribute, BufferGeometry, CustomBlending, GLSL3, OneFactor, OneMinusSrcAlphaFactor,
-  PerspectiveCamera, Points, RawShaderMaterial, Scene, Vector2, Vector4, WebGLRenderer,
+  Matrix3, PerspectiveCamera, Points, RawShaderMaterial, Scene, Vector2, Vector4, WebGLRenderer,
 } from 'three'
 import type { CoreMotion } from './behavior'
 import fragmentShader from './particle.frag?raw'
 import vertexShader from './particle.vert?raw'
 import { particlePositions } from './particles'
-import { graphicsProfiles, type GraphicsProfile } from './profiles'
+import { graphicsProfiles, type GraphicsProfile, type GraphicsSettings } from './profiles'
+
+const paletteTransforms: Record<GraphicsSettings['palette'], Matrix3> = {
+  aurora: new Matrix3(),
+  nebula: new Matrix3().set(.6, .15, .1, .12, .65, .3, .28, .1, .72),
+  ember: new Matrix3().set(.7, .12, .28, .39, .56, .03, .12, .08, .35),
+  glacier: new Matrix3().set(.26, .1, .16, .6, .48, .14, .33, .18, .65),
+}
 
 export function createParticleRenderer(canvas: HTMLCanvasElement) {
   const context = canvas.getContext('webgl2', { alpha: true, antialias: false, depth: false })
@@ -26,6 +33,8 @@ export function createParticleRenderer(canvas: HTMLCanvasElement) {
     uStill: { value: 0 },
     uPixels: { value: 1 },
     uProfileLight: { value: 1 },
+    uPalette: { value: paletteTransforms.aurora },
+    uEconomy: { value: false },
     uPrimaryCount: { value: graphicsProfiles.low.count },
     uPointer: { value: new Vector2() },
     uOrbitEnergy: { value: new Vector2() },
@@ -64,10 +73,12 @@ export function createParticleRenderer(canvas: HTMLCanvasElement) {
   }
 
   return {
-    setProfile(id: GraphicsProfile) {
-      profile = graphicsProfiles[id]
-      geometry.setDrawRange(0, profile.count)
-      uniforms.uProfileLight.value = profile.light
+    configure(settings: GraphicsSettings) {
+      profile = graphicsProfiles[settings.profile]
+      geometry.setDrawRange(0, settings.particleCount ?? profile.count)
+      uniforms.uProfileLight.value = profile.light * settings.brightness / 100
+      uniforms.uPalette.value = paletteTransforms[settings.palette]
+      uniforms.uEconomy.value = settings.quality === 'economy'
     },
     resize(width: number, height: number, dpr: number) {
       renderer.setDrawingBufferSize(width, height, dpr)

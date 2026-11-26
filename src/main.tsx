@@ -1,7 +1,8 @@
 import { StrictMode, useState, useSyncExternalStore } from 'react'
 import { createRoot } from 'react-dom/client'
-import { defaultGraphics } from './graphics/profiles'
+import type { GraphicsSettings } from './graphics/profiles'
 import { useLauncherSnapshot } from './desktop/useLauncherSnapshot'
+import { useSettings } from './desktop/useSettings'
 import { AuroraHome } from './ui/AuroraHome'
 import { CoreDemo } from './ui/CoreDemo'
 import { useFullscreen } from './ui/useFullscreen'
@@ -18,15 +19,24 @@ function getRoute() {
 
 function AuroraApp() {
   const route = useSyncExternalStore(subscribeToRoute, getRoute)
-  const [settings, setSettings] = useState(defaultGraphics)
+  const [demoGraphics, setDemoGraphics] = useState<GraphicsSettings>()
+  const { snapshot, save } = useSettings()
   const fullscreen = useFullscreen()
   const launcher = useLauncherSnapshot()
+
+  if (!snapshot) return <p className="fullscreen-notice" role="status">Carregando preferências…</p>
 
   return (
     <>
       {route === '#/nucleo'
-        ? <CoreDemo settings={settings} onSettingsChange={setSettings} />
-        : <AuroraHome settings={settings} fullscreen={fullscreen.fullscreen} onToggleFullscreen={fullscreen.toggle} launcher={launcher} />}
+        ? <CoreDemo settings={demoGraphics ?? snapshot.settings.graphics} reduced={snapshot.settings.motion === 'reduced'}
+          onSettingsChange={setDemoGraphics} />
+        : <AuroraHome snapshot={snapshot} demoGraphics={demoGraphics} fullscreen={fullscreen.fullscreen}
+          onSaveSettings={async (settings, revision) => {
+            const result = await save(settings, revision)
+            setDemoGraphics(undefined)
+            return result
+          }} onToggleFullscreen={fullscreen.toggle} launcher={launcher} />}
       <p className="fullscreen-notice" role="status">{fullscreen.notice}</p>
     </>
   )

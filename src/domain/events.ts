@@ -7,7 +7,7 @@ export type LauncherFault =
 export type Placement = 'not-requested' | 'requested' | 'confirmed' | 'fallback-requested' | 'fallback-confirmed' | 'unavailable'
 
 export type ApplicationState =
-  | { readonly status: 'not-configured' | 'not-installed' | 'available' | 'starting' | 'unavailable' }
+  | { readonly status: 'not-configured' | 'not-installed' | 'available' | 'not-running' | 'starting' | 'unavailable' }
   | { readonly status: 'running'; readonly window: 'detected' | 'not-detected' | 'unsupported'; readonly placement: Placement }
   | { readonly status: 'focus-requested'; readonly focus: 'confirmed' | 'requested' | 'denied' }
   | { readonly status: 'error'; readonly reason: LauncherFault }

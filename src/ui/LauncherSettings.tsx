@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
-import { chooseExecutable, chooseMonitor, openRegisteredModule, operationFailure, removeExecutable, type DesktopMonitor, type LauncherSnapshot } from '../desktop/platform'
+import { useRef, useState } from 'react'
+import { chooseExecutable, desktopAvailable, openRegisteredModule, operationFailure, removeExecutable, type DesktopMonitor, type LauncherSnapshot } from '../desktop/platform'
+import type { ModuleSettings } from '../desktop/persistence'
 import { modules, type ModuleId } from '../domain/registry'
 import { moduleNotice } from '../domain/state'
 import './launcher-settings.css'
@@ -8,7 +9,11 @@ interface Props {
   snapshot?: LauncherSnapshot
   failed: boolean
   onRefresh: () => Promise<void>
-  onDismiss: () => void
+  category: 'applications' | 'monitors'
+  id: ModuleId
+  onSelect: (id: ModuleId) => void
+  preferences: ModuleSettings
+  onChange: (preferences: ModuleSettings) => void
 }
 
 const environmentNotice: Record<LauncherSnapshot['environment'], string> = {
@@ -27,31 +32,18 @@ function monitorLabel(monitor: DesktopMonitor) {
   return `${monitor.name}${primary} · ${monitor.width} × ${monitor.height} · ${scale} · (${monitor.x}, ${monitor.y})`
 }
 
-export function LauncherSettings({ snapshot, failed, onRefresh, onDismiss }: Props) {
-  const dialog = useRef<HTMLDialogElement>(null)
+export function LauncherSettings({ snapshot, failed, onRefresh, category, id, onSelect, preferences, onChange }: Props) {
   const operation = useRef(false)
-  const [id, setId] = useState<ModuleId>(modules[0].id)
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState('')
   const app = snapshot?.applications.find((app) => app.id === id)
   const monitors = snapshot?.monitors ?? []
-  const preferred = app?.preferredMonitor ?? ''
+  const preferred = preferences.preferredMonitor ?? ''
   const eligibleMonitors = monitors.filter((monitor) => monitor.id !== null)
   const disconnected = preferred && !eligibleMonitors.some((monitor) => monitor.id === preferred)
   const selfPositioned = app?.strategy === 'self-positioned'
   const enabled = !failed && !!app?.capabilities.externalLaunch
   const mayChoose = enabled && !(app.state.status === 'error' && app.state.reason === 'storage')
-
-  useEffect(() => {
-    const element = dialog.current!
-    element.showModal()
-    return () => element.close()
-  }, [])
-
-  function close() {
-    dialog.current?.close()
-    onDismiss()
-  }
 
   async function run(action: () => Promise<string>) {
     if (operation.current) return
@@ -69,25 +61,20 @@ export function LauncherSettings({ snapshot, failed, onRefresh, onDismiss }: Pro
     }
   }
 
-  return (
-    <dialog ref={dialog} className="launcher-settings" aria-labelledby="launcher-settings-title"
-      onKeyDown={(event) => { if (event.key === 'Escape' || event.key === 'F11') event.stopPropagation() }}
-      onCancel={(event) => { event.preventDefault(); close() }}
-    >
-      <header>
-        <h2 id="launcher-settings-title">Aplicativos</h2>
-        <button className="view-control" type="button" onClick={close}>Fechar</button>
-      </header>
+  if (!desktopAvailable()) return <p className="launcher-detail">A integração com aplicativos e monitores está disponível no Aurora Central desktop.</p>
 
+  return (
+    <>
       <label htmlFor="launcher-app">Módulo</label>
       <select id="launcher-app" value={id} disabled={busy} onChange={(event) => {
         const selected = modules.find((module) => module.id === event.currentTarget.value)
-        if (selected) setId(selected.id)
+        if (selected) onSelect(selected.id)
         setNotice('')
       }}>
         {modules.map((module) => <option key={module.id} value={module.id}>Aurora {module.name}</option>)}
       </select>
 
+      {category === 'applications' ? <>
       <div className="launcher-installation">
         <p className="launcher-availability">{failed ? 'Não foi possível consultar o launcher.' : app ? moduleNotice(app.state) : 'Consultando aplicativos…'}</p>
         {app?.executable && <p className="launcher-path">{app.executable}</p>}
@@ -107,15 +94,29 @@ export function LauncherSettings({ snapshot, failed, onRefresh, onDismiss }: Pro
         })}>Remover</button>}
       </div>
 
-      <label htmlFor="launcher-monitor">Monitor preferido</label>
+      <label htmlFor="launcher-opening">Ao acionar o módulo</label>
+      <select id="launcher-opening" value={preferences.opening} disabled={!enabled} onChange={(event) => {
+        onChange({ ...preferences, opening: event.currentTarget.value as ModuleSettings['opening'] })
+      }}>
+        <option value="launch-or-reuse">Iniciar ou reutilizar instância</option>
+        <option value="running-only">Usar somente instância em execução</option>
+      </select>
+      <label className="settings-checkbox">
+        <input type="checkbox" checked={preferences.focusExisting} disabled={!app?.capabilities.windowFocus || !enabled}
+          onChange={(event) => onChange({ ...preferences, focusExisting: event.currentTarget.checked })} />
+        Solicitar foco à janela existente
+      </label>
+      {app && !app.capabilities.windowFocus && <p className="launcher-detail">
+        O foco de janelas é gerenciado pelo ambiente gráfico nesta sessão.
+      </p>}
+      <p className="launcher-detail">Autorizações entram em vigor após o diálogo nativo. O teste de abertura usa as preferências salvas.</p>
+      <p className="launcher-message" role="status">{busy && !notice ? 'Aguardando operação…' : notice}</p>
+      </> : <>
+      <label htmlFor="launcher-monitor">Monitor preferido para novas janelas</label>
       <select id="launcher-monitor" value={preferred}
-        disabled={busy || !mayChoose || !app?.executable || !app.capabilities.initialPlacement || (!eligibleMonitors.length && !preferred)}
+        disabled={busy || failed || !app?.capabilities.initialPlacement || (!eligibleMonitors.length && !preferred)}
         onChange={(event) => {
-          const monitor = event.currentTarget.value || null
-          void run(async () => {
-            await chooseMonitor(id, monitor)
-            return 'Preferência de monitor salva.'
-          })
+          onChange({ ...preferences, preferredMonitor: event.currentTarget.value || null })
         }}>
         <option value="">Padrão do aplicativo</option>
         {disconnected && <option value={preferred} disabled>Monitor salvo desconectado</option>}
@@ -127,11 +128,12 @@ export function LauncherSettings({ snapshot, failed, onRefresh, onDismiss }: Pro
           ? 'A preferência se aplica a novas janelas iniciadas pelo Central. Se o monitor estiver desconectado, o Central tenta usar o principal.'
           : environmentNotice[snapshot.environment]}
       </p>}
-      {monitors.length > 0 && <details>
+      {failed && <p className="launcher-detail" role="status">Não foi possível consultar os monitores.</p>}
+      {monitors.length > 0 && <details open>
         <summary>Monitores detectados ({monitors.length})</summary>
         <ul>{monitors.map((monitor) => <li key={monitor.id ?? monitorLabel(monitor)}>{monitorLabel(monitor)}</li>)}</ul>
       </details>}
-      <p className="launcher-message" role="status">{busy && !notice ? 'Aguardando operação…' : notice}</p>
-    </dialog>
+      </>}
+    </>
   )
 }

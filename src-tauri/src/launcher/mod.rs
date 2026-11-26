@@ -1,4 +1,4 @@
-mod contracts;
+pub(crate) mod contracts;
 mod executable;
 mod platform;
 mod service;
@@ -14,6 +14,7 @@ use std::sync::{
 use tauri::{AppHandle, Manager, WebviewWindow};
 use tauri_plugin_dialog::DialogExt;
 
+use crate::settings::{SaveRequest, SettingsError, Snapshot as SettingsSnapshot};
 use contracts::{AppRequest, ApplicationState, Fault, MonitorRequest, Snapshot};
 use executable::Executable;
 use service::{display_path, Launcher};
@@ -38,6 +39,38 @@ async fn native<T: Send + 'static>(
     tauri::async_runtime::spawn_blocking(action)
         .await
         .map_err(|_| Fault::Platform)?
+}
+
+#[tauri::command]
+pub async fn settings_snapshot(app: AppHandle) -> Result<SettingsSnapshot, SettingsError> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let desktop = app.state::<Desktop>();
+        let launcher = desktop
+            .launcher
+            .lock()
+            .map_err(|_| SettingsError::Storage)?;
+        Ok(launcher.settings())
+    })
+    .await
+    .map_err(|_| SettingsError::Storage)?
+}
+
+#[tauri::command]
+pub async fn settings_save(
+    app: AppHandle,
+    request: SaveRequest,
+) -> Result<SettingsSnapshot, SettingsError> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let displays = platform::displays(&app);
+        let desktop = app.state::<Desktop>();
+        let mut launcher = desktop
+            .launcher
+            .lock()
+            .map_err(|_| SettingsError::Storage)?;
+        launcher.save_settings(request.settings, request.revision, &displays)
+    })
+    .await
+    .map_err(|_| SettingsError::Storage)?
 }
 
 #[tauri::command]

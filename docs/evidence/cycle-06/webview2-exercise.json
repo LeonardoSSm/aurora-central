@@ -1,0 +1,140 @@
+{
+  "webview": "Edg/158.0.4370.33",
+  "phase": "exercise",
+  "profileChanges": 32,
+  "before": {
+    "gl": {
+      "resources": {
+        "Buffer": {
+          "created": 1,
+          "deleted": 0
+        },
+        "Framebuffer": {
+          "created": 3,
+          "deleted": 0
+        },
+        "Program": {
+          "created": 1,
+          "deleted": 0
+        },
+        "Renderbuffer": {
+          "created": 0,
+          "deleted": 0
+        },
+        "Shader": {
+          "created": 2,
+          "deleted": 2
+        },
+        "Texture": {
+          "created": 4,
+          "deleted": 0
+        },
+        "VertexArray": {
+          "created": 1,
+          "deleted": 0
+        }
+      },
+      "draws": 56,
+      "count": 20000,
+      "contextChanges": 1,
+      "losses": 0,
+      "width": 867,
+      "height": 867,
+      "cssWidth": 578
+    },
+    "heap": {
+      "usedSize": 3636836,
+      "totalSize": 4980736,
+      "embedderHeapUsedSize": 1775544,
+      "backingStorageSize": 2025281
+    }
+  },
+  "after": {
+    "gl": {
+      "resources": {
+        "Buffer": {
+          "created": 1,
+          "deleted": 0
+        },
+        "Framebuffer": {
+          "created": 3,
+          "deleted": 0
+        },
+        "Program": {
+          "created": 1,
+          "deleted": 0
+        },
+        "Renderbuffer": {
+          "created": 0,
+          "deleted": 0
+        },
+        "Shader": {
+          "created": 2,
+          "deleted": 2
+        },
+        "Texture": {
+          "created": 4,
+          "deleted": 0
+        },
+        "VertexArray": {
+          "created": 1,
+          "deleted": 0
+        }
+      },
+      "draws": 108,
+      "count": 20000,
+      "contextChanges": 1,
+      "losses": 0,
+      "width": 867,
+      "height": 867,
+      "cssWidth": 578
+    },
+    "heap": {
+      "usedSize": 3847488,
+      "totalSize": 4718592,
+      "embedderHeapUsedSize": 1570896,
+      "backingStorageSize": 2025273
+    }
+  },
+  "customRendering": {
+    "resources": {
+      "Buffer": {
+        "created": 1,
+        "deleted": 0
+      },
+      "Framebuffer": {
+        "created": 3,
+        "deleted": 0
+      },
+      "Program": {
+        "created": 1,
+        "deleted": 0
+      },
+      "Renderbuffer": {
+        "created": 0,
+        "deleted": 0
+      },
+      "Shader": {
+        "created": 2,
+        "deleted": 2
+      },
+      "Texture": {
+        "created": 4,
+        "deleted": 0
+      },
+      "VertexArray": {
+        "created": 1,
+        "deleted": 0
+      }
+    },
+    "draws": 114,
+    "count": 37000,
+    "contextChanges": 1,
+    "losses": 0,
+    "width": 578,
+    "height": 578,
+    "cssWidth": 578
+  },
+  "reducedMotionStaticDraws": 116,
+  "errors": []
+}

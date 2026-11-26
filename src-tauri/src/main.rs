@@ -1,6 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod launcher;
+mod settings;
+mod storage;
 
 fn main() {
     tauri::Builder::default()
@@ -12,6 +14,8 @@ fn main() {
             launcher::launcher_choose_executable,
             launcher::launcher_remove_executable,
             launcher::launcher_choose_monitor,
+            launcher::settings_snapshot,
+            launcher::settings_save,
         ])
         .run(tauri::generate_context!())
         .expect("failed to start Aurora Central");
@@ -39,7 +43,9 @@ mod tests {
                 "allow-launcher-open",
                 "allow-launcher-choose-executable",
                 "allow-launcher-remove-executable",
-                "allow-launcher-choose-monitor"
+                "allow-launcher-choose-monitor",
+                "allow-settings-snapshot",
+                "allow-settings-save"
             ])
         );
         assert!(capability.get("remote").is_none());
@@ -103,6 +109,10 @@ mod tests {
                 .is_ok()
             };
         assert!(allowed(&main, "launcher_open", local));
+        assert!(allowed(&main, "settings_snapshot", local));
+        assert!(allowed(&main, "settings_save", local));
+        assert!(!allowed(&other, "settings_save", local));
+        assert!(!allowed(&main, "settings_save", "https://example.invalid"));
         assert!(!allowed(&other, "launcher_open", local));
         assert!(!allowed(
             &main,

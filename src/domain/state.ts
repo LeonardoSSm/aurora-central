@@ -34,6 +34,7 @@ export function moduleNotice(result: ModuleOpenResult): string {
     case 'not-configured': return 'Nenhum executável configurado.'
     case 'not-installed': return 'Executável cadastrado não encontrado.'
     case 'available': return 'Executável disponível.'
+    case 'not-running': return 'O aplicativo precisa estar em execução para esta ação.'
     case 'starting': return 'Processo iniciado. Aguardando janela.'
     case 'running': {
       const observation = {

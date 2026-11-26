@@ -22,7 +22,9 @@ npm run tauri dev
 
 Na home, use os botões de visualização ou `Alt+1`, `Alt+2` e `Alt+3` para abrir os modos Central, Imersivo e Ambiental. `Esc` volta à Central, cancela uma seleção em curso e sai da tela cheia. `F11` alterna a tela cheia. No modo Ambiental, mover o ponteiro, tocar ou focar o botão com Tab revela **Voltar à Central**.
 
-Abra **Demonstração do núcleo** no rodapé da home para testar os oito estados e ajustar perfil, FPS e DPR. As opções gráficas também se aplicam à home durante a sessão. O controle de amplitude fica disponível no estado **Falando**.
+Abra **Configurações** no rodapé para ajustar a aparência, o desempenho, o modo inicial, os aplicativos, os monitores e o movimento reduzido. A prévia usa o próprio núcleo da home. Use **Aplicar** para salvar as preferências no desktop. [Configurações e personalização](docs/cycle-06.md)
+
+Abra **Demonstração do núcleo** para testar os oito estados e ajustar perfil, FPS e DPR durante a sessão. Os ajustes de demonstração também se aplicam à home. O controle de amplitude fica disponível no estado **Falando**.
 
 No desktop, abra **Aplicativos** e escolha um módulo. Use **Selecionar executável** e confirme o arquivo no diálogo nativo. Depois, acione o módulo na órbita ou use **Testar abertura**. No Windows, a configuração inclui o monitor para aplicativos que permitem posicionamento pelo Central. [Integração de aplicativos](docs/application-integration.md)
 
@@ -55,3 +57,4 @@ O build gera o executável em `src-tauri/target/release/`. Windows usa `aurora-c
 - [Segurança do launcher](docs/security.md)
 - [Relatório e evidências do Ciclo 04](docs/cycle-04.md)
 - [Relatório, contratos e evidências do Ciclo 05](docs/cycle-05.md)
+- [Configurações, contratos e evidências do Ciclo 06](docs/cycle-06.md)

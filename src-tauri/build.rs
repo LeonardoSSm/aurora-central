@@ -6,6 +6,8 @@ fn main() {
             "launcher_choose_executable",
             "launcher_remove_executable",
             "launcher_choose_monitor",
+            "settings_snapshot",
+            "settings_save",
         ]),
     ))
     .expect("failed to configure application permissions");

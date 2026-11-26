@@ -102,6 +102,7 @@ pub enum ApplicationState {
     NotConfigured,
     NotInstalled,
     Available,
+    NotRunning,
     Starting,
     Running {
         window: WindowObservation,

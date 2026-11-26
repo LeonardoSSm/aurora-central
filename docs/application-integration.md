@@ -1,6 +1,6 @@
 # Integração de aplicativos
 
-Em **Aplicativos**, selecione o módulo, escolha o binário instalado e confirme a autorização no diálogo nativo. O Central valida o arquivo, guarda a preferência e usa a pasta do executável como diretório de trabalho. **Testar abertura** usa a mesma operação da órbita. **Trocar executável** atualiza a autorização. **Remover** limpa a configuração.
+Em **Aplicativos**, selecione o módulo, escolha o binário instalado e confirme a autorização no diálogo nativo. O Central valida o arquivo e usa a pasta do executável como diretório de trabalho. **Testar abertura** usa a mesma operação da órbita. **Trocar executável** atualiza a autorização e **Remover** revoga o executável. Use **Aplicar** para salvar o modo de abertura, a preferência de foco e o monitor escolhido na categoria **Monitores**. [Configurações do Ciclo 06](cycle-06.md)
 
 | Módulo | Distribuição observada | Integração neste ciclo |
 | --- | --- | --- |
