@@ -57,7 +57,7 @@ void main() {
   float crease = pow(0.5 + 0.5 * sin(phase + 1.1 + fine * 0.48), 4.0);
 
   float breathing = (sin(uTime * 1.12) + 0.24 * sin(uTime * 0.63 + 1.4)) * 0.026 * uBreath;
-  float listening = uSignals.x * sin(direction.y * 7.5 - flow * 1.75);
+  float listening = uSignals.x * (sin(direction.y * 7.5 - flow * 1.75) + 0.7 * uAmplitude);
   float thinking = uSignals.y * sin(direction.z * 10.5 + direction.x * 6.4 + flow * 2.3 + broad * 2.0);
   float syllable = 0.42 + 0.34 * sin(uTime * 5.7) + 0.17 * sin(uTime * 8.3 + 1.6);
   float speaking = uSignals.z * (0.52 * syllable + 1.12 * uAmplitude);

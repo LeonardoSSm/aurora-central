@@ -8,6 +8,7 @@ Tauri 2 e Rust criam a janela. A WebView do sistema renderiza React, TypeScript 
 | `src/graphics/` | Canvas WebGL 2, perfis, estados, amostragem volumétrica, shaders GLSL e ciclo de renderização |
 | `src/domain/` | Identidade visual dos módulos, comandos, resultados e transição orbital |
 | `src/desktop/` | Tela cheia, IPC tipado e atualização de estado na WebView |
+| `src/intelligence/` | Portas de assistente, contexto e voz, sessão conversacional e autorização de comandos |
 | `src-tauri/src/launcher/contracts.rs` | IDs, políticas, estratégias e contratos do launcher |
 | `src-tauri/src/launcher/service.rs` | Registro em execução, coordenação de abertura, processos iniciados e atualização de estados |
 | `src-tauri/src/launcher/executable.rs` e `store.rs` | Validação, autorização, início nativo e persistência transacional por plataforma |
@@ -27,3 +28,7 @@ As entradas de apresentação trazem nome, ícone, cor e ângulo. A política na
 ## Fronteiras de execução
 
 `main-local` permite tela cheia e cinco comandos de launcher na WebView local `main`. A seleção e a confirmação do executável ocorrem em diálogos nativos abertos pelo Rust. A CSP de produção limita conexões ao transporte interno do Tauri e bloqueia frames, formulários e objetos. A versão de navegador usa a Fullscreen API e informa que a abertura de aplicativos requer desktop. [Integração](application-integration.md) · [Segurança](security.md)
+
+## Fluxo conversacional
+
+A conversa recebe uma mensagem de texto ou um rascunho transcrito. O controlador encaminha a mensagem ao provedor configurado, publica deltas de texto e traduz o andamento para o estado do núcleo. Uma proposta estruturada passa pelo Command Registry. Aberturas autorizadas chamam o mesmo launcher da órbita, com o ID registrado como único parâmetro. O controlador cancela a observação da abertura quando a sessão termina. [Contratos e fronteiras do Ciclo 05](cycle-05.md)

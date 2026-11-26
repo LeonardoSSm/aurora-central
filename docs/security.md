@@ -22,3 +22,10 @@ O registro versionado é local ao perfil do aplicativo. A escrita usa arquivo te
 - Processos externos e filhos seguem seu próprio ciclo de vida. O posicionamento exige uma janela de processo iniciado pelo Central e fica restrito às primeiras tentativas de abertura.
 
 A autorização vincula o arquivo do aplicativo. A integridade de bibliotecas, recursos adjacentes, variáveis de ambiente e diretórios depende do ambiente local. Uma conta capaz de editar a instalação ou o registro do Central está dentro dessa fronteira de confiança. No Linux, o descritor evita a troca de caminho após a verificação. O filesystem ainda pode permitir que a mesma conta escreva no inode antes do exec.
+
+## Propostas da conversa
+
+- O Command Registry aceita somente `module.describe` e `module.open`, com um ID exato do registro compartilhado. Campos extras, comandos de shell, caminhos, argumentos e permissões fornecidas na proposta são rejeitados. Texto do assistente é exibido como texto.
+- A abertura exige a permissão `modules:open` atribuída pela composição local a esse provedor e um clique confiável na confirmação da solicitação atual. A aprovação tem uso único e expira. Recusar, fechar, mudar de modo ou iniciar uma seleção orbital descarta a aprovação pendente.
+- Depois da aprovação, o launcher recebe somente o ID tipado e revalida o executável previamente autorizado no Rust. O ACL e a CSP continuam restritos à WebView local. A confirmação é da sessão conversacional. A WebView local já possui acesso ao mesmo launcher para acionar a órbita.
+- O microfone é acionado por interação e usa reconhecimento local se disponível. O aplicativo encerra a captura, a medição e a reprodução ao cancelar a operação ou esconder a janela. Áudio, transcrições e histórico ficam em memória durante a sessão. [Ciclo 05](cycle-05.md)

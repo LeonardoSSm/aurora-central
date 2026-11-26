@@ -6,7 +6,13 @@ import type { ModuleId } from '../domain/registry'
 import { createModuleSelection, orbitalTransitionMs, type ModuleSelection } from '../domain/selection'
 import { moduleNotice } from '../domain/state'
 import { ParticleCore } from '../graphics/ParticleCore'
+import type { CoreInput } from '../graphics/behavior'
 import type { GraphicsSettings } from '../graphics/profiles'
+import { createConversation, type Conversation } from '../intelligence/conversation'
+import { deviceRecognition, deviceSpeech } from '../intelligence/deviceSpeech'
+import { createCommandRegistry } from '../intelligence/registry'
+import { simulatedAssistant, simulatedSpeech } from '../intelligence/simulation'
+import { ConversationPanel } from './ConversationPanel'
 import { OrbitalConnections } from './OrbitalConnections'
 import { LauncherSettings } from './LauncherSettings'
 import { orbitLayout, type OrbitLayout } from './orbitLayout'
@@ -18,6 +24,17 @@ const openModule = createModuleLauncher(openRegisteredModule)
 function subscribeToMotion(onChange: () => void) {
   motion.addEventListener('change', onChange)
   return () => motion.removeEventListener('change', onChange)
+}
+
+function HomeCore({ conversation, orbitalExecution, orbitEnergy, settings }: {
+  conversation: Conversation
+  orbitalExecution: boolean
+  orbitEnergy: CoreInput['orbitEnergy']
+  settings: GraphicsSettings
+}) {
+  const { state, amplitude } = useSyncExternalStore(conversation.subscribe, conversation.getSnapshot)
+  return <ParticleCore state={orbitalExecution ? 'executing' : state}
+    amplitude={amplitude} orbitEnergy={orbitEnergy} settings={settings} />
 }
 
 interface Props {
@@ -35,8 +52,17 @@ export function AuroraHome({ settings, fullscreen, onToggleFullscreen, launcher 
   const [controller] = useState(() => createModuleSelection(openModule, setSelection))
   const [layout, setLayout] = useState<OrbitLayout>()
   const [configuring, setConfiguring] = useState(false)
+  const [conversing, setConversing] = useState(false)
+  const [conversation] = useState(() => createConversation({
+    assistant: simulatedAssistant,
+    permissions: ['modules:read', 'modules:open'],
+    commands: createCommandRegistry(openRegisteredModule),
+    voice: deviceRecognition, voiceSimulation: simulatedSpeech, speech: deviceSpeech,
+    desktop: desktopAvailable(),
+  }))
   const scene = useRef<HTMLElement>(null)
   const modeControl = useRef<HTMLButtonElement>(null)
+  const conversationToggle = useRef<HTMLButtonElement>(null)
   const restoreFocus = useRef(false)
   const reduced = useSyncExternalStore(subscribeToMotion, () => motion.matches)
   const command = selection && 'command' in selection ? selection.command : undefined
@@ -69,22 +95,45 @@ export function AuroraHome({ settings, fullscreen, onToggleFullscreen, launcher 
   useEffect(() => () => controller.dispose(), [controller])
 
   useEffect(() => {
+    function onVisibilityChange() {
+      if (document.visibilityState === 'hidden') conversation.cancelVoice()
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      conversation.reset()
+    }
+  }, [conversation])
+
+  useEffect(() => {
     if (reduced) controller.finishTransition()
   }, [controller, reduced])
+
+  const closeConversation = useCallback(() => {
+    conversation.reset()
+    setConversing(false)
+  }, [conversation])
+
+  const dismissConversation = useCallback(() => {
+    closeConversation()
+    conversationToggle.current?.focus({ preventScroll: true })
+  }, [closeConversation])
 
   const changeMode = useCallback((next: ViewMode) => {
     if (next === mode) return
     restoreFocus.current = true
     controller.dismiss()
+    closeConversation()
     setHovered(undefined)
     setFocused(undefined)
     setMode(next)
-  }, [controller, mode])
+  }, [controller, mode, closeConversation])
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (configuring || event.repeat || event.ctrlKey || event.metaKey || event.shiftKey) return
       if (event.key === 'Escape' && !event.altKey) {
+        if (conversing) dismissConversation()
         if (mode === 'central') controller.dismiss()
         else changeMode('central')
       }
@@ -98,10 +147,11 @@ export function AuroraHome({ settings, fullscreen, onToggleFullscreen, launcher 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
 
-  }, [controller, changeMode, configuring, mode])
+  }, [controller, changeMode, configuring, conversing, dismissConversation, mode])
 
   return (
-    <main className="home" data-mode={mode} style={{ '--orbital-duration': `${orbitalTransitionMs}ms` } as CSSProperties}>
+    <main className="home" data-mode={mode} data-conversing={conversing}
+      style={{ '--orbital-duration': `${orbitalTransitionMs}ms` } as CSSProperties}>
       <header className={mode === 'central' ? 'brand' : 'sr-only'}>
         <span className="brand-mark" aria-hidden="true" />
         <h1 className="brand-name" aria-label="Aurora Central">Aurora</h1>
@@ -109,8 +159,9 @@ export function AuroraHome({ settings, fullscreen, onToggleFullscreen, launcher 
       </header>
 
       <section ref={scene} className="scene" aria-label="Ecossistema Aurora">
-        <ParticleCore
-          state={command && !reduced ? 'executing' : 'idle'}
+        <HomeCore
+          conversation={conversation}
+          orbitalExecution={Boolean(command && !reduced)}
           orbitEnergy={direction && { x: direction.x * strength, y: direction.y * strength }}
           settings={settings}
         />
@@ -133,7 +184,10 @@ export function AuroraHome({ settings, fullscreen, onToggleFullscreen, launcher 
                     onPointerLeave={() => setHovered(undefined)}
                     onFocus={(event) => { if (event.currentTarget.matches(':focus-visible')) setFocused(module.id) }}
                     onBlur={() => setFocused(undefined)}
-                    onClick={() => controller.select(module.id, !motion.matches)}
+                    onClick={() => {
+                      if (conversing) closeConversation()
+                      controller.select(module.id, !motion.matches)
+                    }}
                   >
                     <span className={`module-icon icon-${module.icon}`} aria-hidden="true">
                       <i /><i /><i /><i />
@@ -151,6 +205,9 @@ export function AuroraHome({ settings, fullscreen, onToggleFullscreen, launcher 
         )}
       </section>
 
+      {conversing && <ConversationPanel conversation={conversation}
+        providerName={simulatedAssistant.name} onClose={dismissConversation} />}
+
       <footer className="home-footer">
         <p className="status" role="status">
           {selection?.phase === 'opening' && <span>Verificando abertura…</span>}
@@ -159,10 +216,20 @@ export function AuroraHome({ settings, fullscreen, onToggleFullscreen, launcher 
           )}
         </p>
         {mode === 'central' && <div className="home-links">
+          <button ref={conversationToggle} className="core-link settings-link" type="button"
+            aria-expanded={conversing} aria-controls={conversing ? 'conversation' : undefined}
+            onClick={() => {
+              if (conversing) dismissConversation()
+              else {
+                controller.dismiss()
+                setConversing(true)
+              }
+            }}>Conversa</button>
           <a href="#/nucleo" className="core-link">Demonstração do núcleo</a>
           {desktopAvailable() && <button className="core-link settings-link" type="button" aria-haspopup="dialog"
             onClick={() => {
               controller.dismiss()
+              if (conversing) closeConversation()
               setConfiguring(true)
             }}>Aplicativos</button>}
         </div>}
