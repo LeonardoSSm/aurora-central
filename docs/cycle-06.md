@@ -41,3 +41,33 @@ As alterações de visualização inicial entram em vigor ao remontar a home, in
 A prévia atualiza matrizes de paleta, uniformes, faixa de desenho e tamanho do buffer no renderizador existente. A geometria mantém 100.000 posições determinísticas em um único buffer. O perfil muda quantas posições são submetidas. O tamanho do buffer é limitado a 4.096 pixels por eixo e 8.388.608 pixels no total. Perfil, qualidade, movimentos e cadência podem ser testados sem fechar o painel. O runtime desfaz observadores, listeners e recursos Three.js ao desmontar o núcleo.
 
 O Windows aplica as preferências de foco e de monitor quando existe uma janela elegível. O Linux usa a descoberta de processos existente. O gerenciamento de posição e foco continua sob responsabilidade do ambiente gráfico nessas sessões. A versão web permite prévia e aplicação durante a sessão. [Integração por plataforma](application-integration.md)
+
+## Verificação e evidências
+
+Validação local em 26 de novembro de 2026 no Windows 11 26H2 (26300.9974), Node.js 24.15.0, Rust 1.97.1 e WebView2 158.0.4370.33.
+
+| Comando | Resultado local |
+| --- | --- |
+| `npm ci --offline` | Dependências instaladas do cache pelo lockfile. |
+| `npm run lint` e `npm run typecheck` | Aprovados. |
+| `npm test` | 38 testes passaram, incluindo cadência em segundo plano e limites de renderização. |
+| `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` | Aprovado. |
+| `npm run tauri build -- --no-bundle -- --locked` | Binário Windows de produção gerado. O Vite emitiu o aviso de chunk acima de 500 kB. |
+| `cargo test --manifest-path src-tauri/Cargo.toml --release --locked --features tauri/custom-protocol` | 17 testes Windows, incluindo migração, restauração, corrupção, conflitos de revisão, falha de escrita e ACL. |
+| `node scripts/smoke-settings.mjs 9236 <fase>` | WebView2 nativa em três processos sucessivos. Prévia, gravação, reinício, restauração e recuperação. |
+| `node scripts/smoke-conversation.mjs 9236 <diretório>` | Regressão do Ciclo 05 exercitada na WebView2 de produção nas duas viewports. [Resultado](evidence/cycle-06/webview2-conversation.json) |
+
+A matriz do PR roda lint, typecheck, testes JavaScript e Rust, rustfmt e build desktop em Windows 2025 e Ubuntu 24.04. [Verificações do PR #14](https://github.com/LeonardoSSm/aurora-central/pull/14/checks)
+
+Na comparação com a referência, a home padrão conserva a assinatura Aurora no topo, as quatro cápsulas nas posições da órbita, o fundo escuro e o volume sem rosto em azul, violeta, magenta e coral. A prévia glacial mantém a mesma geometria e muda a cor do núcleo. Na viewport de 480 × 560, o painel inferior preserva uma faixa da prévia e permite rolar os controles com os botões de ação à vista. [Home padrão](evidence/cycle-06/home-windows.jpg) · [Prévia de aparência](evidence/cycle-06/aparencia-windows.jpg) · [Janela de 480 × 560](evidence/cycle-06/desempenho-480-windows.jpg)
+
+O ensaio alternou entre os quatro perfis 32 vezes. A WebView2 submeteu as densidades esperadas e manteve um único contexto ativo, sem perda de contexto ou novas chamadas de criação de buffers, programas, texturas e framebuffers observadas durante as trocas. A resolução de 50% com DPR 2 reduziu o buffer de 867 × 867 a 578 × 578 na viewport lógica de 1280 × 800, e a densidade foi ajustada para 37.000 partículas. O teste coletou métricas do heap JavaScript antes e depois das trocas, sempre após uma coleta de lixo. Os contadores mostram chamadas WebGL e memória da WebView2. A memória física da GPU e o consumo de longo prazo ficaram fora dessa medição. [Métricas e contadores](evidence/cycle-06/webview2-exercise.json)
+
+Esc fechou a prévia de aparência, descartou a edição e devolveu o foco ao botão **Configurações**. Após reiniciar a aplicação, o modo inicial Imersivo, a paleta, o movimento reduzido, a densidade e as preferências de abertura e monitor voltaram. O ensaio aplicou os padrões, encerrou a janela, truncou o arquivo do perfil de teste e abriu um terceiro processo para verificar o aviso e a correção do arquivo. O teste Rust de migração verificou que a autorização legada continua válida após restauração de preferências. [Aplicativos](evidence/cycle-06/aplicativos-windows.jpg) · [Monitores](evidence/cycle-06/monitores-windows.jpg) · [Reinício](evidence/cycle-06/imersivo-reinicio-windows.jpg) · [Recuperação](evidence/cycle-06/recuperacao-windows.jpg)
+
+Para reproduzir, gere um build de produção com um identificador Tauri exclusivo para o perfil de teste. Abra o binário com `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9236` e `WEBVIEW2_USER_DATA_FOLDER` apontando a um diretório dedicado. Rode o script com `exercise`, encerre e reabra o binário e rode `restart`. Encerre a aplicação novamente, trunque apenas o `settings.json` do perfil de teste e rode `recover` após a terceira abertura. A fase `exercise` usa ao menos um monitor com ID estável.
+
+## Limites
+
+- O ensaio visual utilizou Windows com uma única tela física e viewports emuladas de 1280 × 800 e 480 × 560. O Ubuntu é coberto por build e testes no CI. A validação visual nativa no Linux e o teste de desconexão física de monitores seguem pendentes.
+- A renderização usa o limite configurado, a taxa disponível da WebView e a política da janela. A medição de recursos corresponde às trocas instrumentadas nesse equipamento.

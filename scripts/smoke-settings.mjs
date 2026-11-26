@@ -39,6 +39,12 @@ async function select(id, value) {
   })()`)
 }
 
+async function escape() {
+  for (const type of ['rawKeyDown', 'keyUp']) {
+    await page.send('Input.dispatchKeyEvent', { type, key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 })
+  }
+}
+
 async function screenshot(name) {
   const { data } = await page.send('Page.captureScreenshot', { format: 'jpeg', quality: 93 })
   await writeFile(join(directory, name + '.jpg'), Buffer.from(data, 'base64'))
@@ -117,7 +123,8 @@ try {
     await eventually(`${feedback}.startsWith('Prévia ativa')`)
     await wait(250)
     await screenshot('aparencia-windows')
-    await click('Fechar', 'dialog')
+    await escape()
+    await eventually("!document.querySelector('dialog') && document.activeElement.textContent.trim() === 'Configurações'")
     await click('Configurações', '.home-links')
     await click('Aparência', '.settings-nav')
     assert.equal(await page.evaluate("document.getElementById('settings-palette').value"), 'aurora')
