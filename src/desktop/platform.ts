@@ -1,4 +1,5 @@
 import { invoke, isTauri } from '@tauri-apps/api/core'
+import { abortableDelay, untilAborted } from '../domain/abort'
 import type { ApplicationState, LauncherFault, ModuleOpenResult } from '../domain/events'
 import type { ModuleId } from '../domain/registry'
 
@@ -36,22 +37,24 @@ export const desktopAvailable = isTauri
 const deadlineMs = 12_000
 const timedOut = Symbol('launcher-timeout')
 
-async function withDeadline<T>(promise: Promise<T>, deadline: number): Promise<T> {
+async function withDeadline<T>(promise: Promise<T>, deadline: number, signal?: AbortSignal): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined
   try {
-    return await Promise.race([
+    const pending = Promise.race([
       promise,
       new Promise<never>((_, reject) => {
         timer = setTimeout(() => reject(timedOut), Math.max(0, deadline - performance.now()))
       }),
     ])
+    return await (signal ? untilAborted(pending, signal) : pending)
   } finally {
     clearTimeout(timer)
   }
 }
 
-export function launcherSnapshot(deadline = performance.now() + deadlineMs) {
-  return withDeadline(invoke<LauncherSnapshot>('launcher_snapshot'), deadline)
+export function launcherSnapshot(deadline = performance.now() + deadlineMs, signal?: AbortSignal) {
+  signal?.throwIfAborted()
+  return withDeadline(invoke<LauncherSnapshot>('launcher_snapshot'), deadline, signal)
 }
 
 export function chooseExecutable(id: ModuleId) {
@@ -77,22 +80,24 @@ export function operationFailure(reason: unknown): ModuleOpenResult {
   return { status: 'error', reason: fault ?? 'platform' }
 }
 
-export async function openRegisteredModule(id: ModuleId): Promise<ModuleOpenResult> {
+export async function openRegisteredModule(id: ModuleId, signal = new AbortController().signal): Promise<ModuleOpenResult> {
+  signal.throwIfAborted()
   if (!desktopAvailable()) return { status: 'browser' }
   const deadline = performance.now() + deadlineMs
   try {
-    let state = await withDeadline(invoke<ApplicationState>('launcher_open', { request: { id } }), deadline)
+    let state = await withDeadline(invoke<ApplicationState>('launcher_open', { request: { id } }), deadline, signal)
     if (state.status !== 'starting') return state
 
     while (state.status === 'starting' && performance.now() < deadline) {
-      await new Promise((resolve) => setTimeout(resolve, 350))
+      await abortableDelay(350, signal)
       if (performance.now() >= deadline) break
-      const snapshot = await launcherSnapshot(deadline)
+      const snapshot = await launcherSnapshot(deadline, signal)
       state = snapshot.applications.find((app) => app.id === id)?.state ?? { status: 'unavailable' }
     }
     if (state.status === 'available') return { status: 'finished' }
     return state.status === 'starting' ? { status: 'timeout' } : state
   } catch (error) {
+    signal.throwIfAborted()
     return operationFailure(error)
   }
 }

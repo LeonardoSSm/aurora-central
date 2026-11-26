@@ -27,7 +27,7 @@ export function ParticleCore({ state, amplitude, orbitEnergy, settings }: Partic
   }, [state, amplitude, orbitEnergy, settings])
 
   return (
-    <div className="core">
+    <div className="core" data-state={state}>
       <canvas ref={canvas} aria-hidden="true" />
       <p className="core-fallback" role="status">Núcleo Aurora indisponível. Aguardando WebGL 2.</p>
     </div>

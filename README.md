@@ -26,6 +26,8 @@ Abra **Demonstração do núcleo** no rodapé da home para testar os oito estado
 
 No desktop, abra **Aplicativos** e escolha um módulo. Use **Selecionar executável** e confirme o arquivo no diálogo nativo. Depois, acione o módulo na órbita ou use **Testar abertura**. No Windows, a configuração inclui o monitor para aplicativos que permitem posicionamento pelo Central. [Integração de aplicativos](docs/application-integration.md)
 
+Abra **Conversa** no modo Central para usar a simulação local. Experimente **Sobre Aurora Nexus** ou **Simular entrada por voz**. O botão **Microfone** depende do reconhecimento `pt-BR` no dispositivo, e **Ler em voz alta** exige uma voz local em português. A transcrição preenche o campo para revisão. **Abrir Aurora Board** propõe uma abertura pelo launcher desktop e apresenta a confirmação separadamente. [Contratos e validação do Ciclo 05](docs/cycle-05.md)
+
 ## Verificação e build
 
 ```sh
@@ -52,3 +54,4 @@ O build gera o executável em `src-tauri/target/release/`. Windows usa `aurora-c
 - [Integração de aplicativos](docs/application-integration.md)
 - [Segurança do launcher](docs/security.md)
 - [Relatório e evidências do Ciclo 04](docs/cycle-04.md)
+- [Relatório, contratos e evidências do Ciclo 05](docs/cycle-05.md)
