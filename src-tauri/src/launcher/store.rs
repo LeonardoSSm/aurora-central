@@ -1,10 +1,10 @@
 use std::{
     collections::BTreeMap,
-    fs::{self, File, OpenOptions},
-    io::{self, Write},
+    io,
     path::{Path, PathBuf},
 };
 
+use crate::storage;
 use serde::{Deserialize, Serialize};
 
 use super::{
@@ -40,7 +40,6 @@ fn platform() -> Platform {
 pub struct Store {
     registry: Registry,
     path: PathBuf,
-    _lock: File,
 }
 
 impl Store {
@@ -49,20 +48,9 @@ impl Store {
     }
 
     fn read(directory: &Path) -> io::Result<Self> {
-        fs::create_dir_all(directory)?;
-        let lock = OpenOptions::new()
-            .read(true)
-            .write(true)
-            .create(true)
-            .truncate(false)
-            .open(directory.join("launcher.lock"))?;
-        lock.try_lock().map_err(io::Error::from)?;
-
         let path = directory.join("launcher-v1.json");
-        let registry = match File::open(&path) {
-            Ok(file) if file.metadata()?.is_file() && file.metadata()?.len() <= 128 * 1024 => {
-                serde_json::from_reader(file)?
-            }
+        let registry = match storage::read(&path) {
+            Ok(bytes) => serde_json::from_slice(&bytes)?,
             Err(error) if error.kind() == io::ErrorKind::NotFound => Registry {
                 version: 1,
                 platforms: BTreeMap::new(),
@@ -72,11 +60,7 @@ impl Store {
         if registry.version != 1 {
             return Err(io::ErrorKind::InvalidData.into());
         }
-        Ok(Self {
-            registry,
-            path,
-            _lock: lock,
-        })
+        Ok(Self { registry, path })
     }
 
     pub fn get(&self, id: AppId) -> Option<&Approval> {
@@ -91,20 +75,8 @@ impl Store {
         } else {
             entries.remove(&id);
         }
-        self.replace(&next).map_err(|_| Fault::Storage)?;
+        storage::replace(&self.path, &next).map_err(|_| Fault::Storage)?;
         self.registry = next;
-        Ok(())
-    }
-
-    fn replace(&self, registry: &Registry) -> io::Result<()> {
-        let directory = self.path.parent().ok_or(io::ErrorKind::InvalidInput)?;
-        let mut file = tempfile::NamedTempFile::new_in(directory)?;
-        serde_json::to_writer(&mut file, registry)?;
-        file.flush()?;
-        file.as_file().sync_all()?;
-        file.persist(&self.path)?;
-        #[cfg(unix)]
-        let _ = File::open(directory).and_then(|dir| dir.sync_all());
         Ok(())
     }
 }

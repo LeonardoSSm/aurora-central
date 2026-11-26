@@ -5,16 +5,17 @@ import { runCore } from './runCore'
 
 interface ParticleCoreProps extends CoreInput {
   settings: GraphicsSettings
+  reduced?: boolean
 }
 
-export function ParticleCore({ state, amplitude, orbitEnergy, settings }: ParticleCoreProps) {
+export function ParticleCore({ state, amplitude, orbitEnergy, settings, reduced = false }: ParticleCoreProps) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const runtime = useRef<ReturnType<typeof runCore>>(null)
-  const [initial] = useState(() => ({ input: { state, amplitude, orbitEnergy }, settings }))
+  const [initial] = useState(() => ({ input: { state, amplitude, orbitEnergy }, settings, reduced }))
 
   useEffect(() => {
     if (!canvas.current) return
-    const core = runCore(canvas.current, initial.input, initial.settings)
+    const core = runCore(canvas.current, initial.input, initial.settings, initial.reduced)
     runtime.current = core
     return () => {
       runtime.current = null
@@ -23,8 +24,8 @@ export function ParticleCore({ state, amplitude, orbitEnergy, settings }: Partic
   }, [initial])
 
   useEffect(() => {
-    runtime.current?.update({ state, amplitude, orbitEnergy }, settings)
-  }, [state, amplitude, orbitEnergy, settings])
+    runtime.current?.update({ state, amplitude, orbitEnergy }, settings, reduced)
+  }, [state, amplitude, orbitEnergy, settings, reduced])
 
   return (
     <div className="core" data-state={state}>

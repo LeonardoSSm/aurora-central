@@ -24,10 +24,11 @@ const profiles = Object.entries(graphicsProfiles) as [GraphicsProfile, (typeof g
 
 interface CoreDemoProps {
   settings: GraphicsSettings
+  reduced: boolean
   onSettingsChange: (settings: GraphicsSettings) => void
 }
 
-export function CoreDemo({ settings, onSettingsChange }: CoreDemoProps) {
+export function CoreDemo({ settings, reduced, onSettingsChange }: CoreDemoProps) {
   const title = useRef<HTMLHeadingElement>(null)
   const [state, setState] = useState<CoreState>('idle')
   const [amplitude, setAmplitude] = useState(0)
@@ -42,7 +43,7 @@ export function CoreDemo({ settings, onSettingsChange }: CoreDemoProps) {
       </header>
 
       <div className="demo-preview">
-        <ParticleCore state={state} amplitude={amplitude} settings={settings} />
+        <ParticleCore state={state} amplitude={amplitude} settings={settings} reduced={reduced} />
       </div>
 
       <section aria-label="Controles de demonstração" className="demo-controls">
@@ -54,7 +55,7 @@ export function CoreDemo({ settings, onSettingsChange }: CoreDemoProps) {
         </label>
         <label>
           Perfil gráfico
-          <select value={settings.profile} onChange={(event) => onSettingsChange(profileSettings(event.target.value as GraphicsProfile))}>
+          <select value={settings.profile} onChange={(event) => onSettingsChange(profileSettings(event.target.value as GraphicsProfile, settings))}>
             {profiles.map(([id, profile]) => <option key={id} value={id}>{profileLabels[id]} · {profile.count.toLocaleString('pt-BR')} partículas</option>)}
           </select>
         </label>

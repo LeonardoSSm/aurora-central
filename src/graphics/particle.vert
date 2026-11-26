@@ -11,6 +11,7 @@ uniform float uAmplitude;
 uniform float uStill;
 uniform float uPixels;
 uniform float uProfileLight;
+uniform mat3 uPalette;
 uniform float uPrimaryCount;
 uniform vec2 uPointer;
 uniform vec2 uOrbitEnergy;
@@ -104,7 +105,7 @@ void main() {
   color = mix(color, magenta, smoothstep(-0.36, 0.13, hue));
   color = mix(color, pink, smoothstep(-0.02, 0.47, hue));
   color = mix(color, coral, smoothstep(0.20, 0.68, hue));
-  color = mix(color, vec3(1.0, 0.35, 0.16), uOutcomes.y * (0.53 + 0.16 * error));
+  color = mix(uPalette * color, vec3(1.0, 0.35, 0.16), uOutcomes.y * (0.53 + 0.16 * error));
   color = mix(color, vec3(1.0, 0.83, 0.97), 0.27 * lightBand + 0.25 * success);
 
   vColor = mix(color, vec3(1.0, 0.78, 0.96), 0.22 * orbitalConcentration);

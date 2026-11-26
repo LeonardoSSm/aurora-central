@@ -2,7 +2,7 @@
 
 ## Capabilities e entradas
 
-- `main-local` vincula tela cheia e cinco comandos específicos à janela local `main`. `AppManifest` inclui cada comando próprio no ACL. A WebView recebe IDs registrados e resultados tipados. O acesso ao diálogo nativo fica no Rust. [Capabilities do Tauri](https://v2.tauri.app/security/capabilities/)
+- `main-local` vincula tela cheia, cinco comandos de launcher e dois de preferências à janela local `main`. `AppManifest` inclui cada comando próprio no ACL. A WebView recebe IDs registrados e resultados tipados. O acesso ao diálogo nativo fica no Rust. [Capabilities do Tauri](https://v2.tauri.app/security/capabilities/)
 - A CSP mantém scripts e assets locais e restringe conexões ao IPC interno do Tauri. Origens remotas, plugins de execução de comandos e comandos genéricos de sistema ficam fora da capability.
 - O Rust recebe objetos de solicitação que rejeitam campos extras, incluindo argumentos, executável e diretório de trabalho. Um ID desconhecido ou um identificador de monitor fora do formato é rejeitado. A preferência de monitor exige um alvo disponível na topologia atual.
 
@@ -13,6 +13,8 @@ O usuário escolhe o arquivo em diálogo nativo e confirma o nome do módulo e o
 A abertura revalida o binário e seus bytes. O Windows mantém o arquivo aberto com compartilhamento de leitura até o spawn. No Linux, a abertura usa o descritor verificado do ELF e aplica `no_new_privs`. `Command` usa executável explícito, argumentos separados e diretório de trabalho derivado. Os quatro módulos têm lista de argumentos vazia. O processo recebe o contexto normal do usuário e as variáveis da sessão.
 
 O registro versionado é local ao perfil do aplicativo. A escrita usa arquivo temporário, sincronização e substituição atômica. Um lock exclusivo protege o perfil contra duas instâncias do Central executarem ou gravarem em paralelo. Falha ao ler, bloquear ou interpretar o registro bloqueia o acesso ao launcher e mantém disponível a interface gráfica.
+
+O Settings Manager valida `settings.json` sob o mesmo lock do perfil. Os comandos de preferências aceitam opções gráficas e de integração por ID. O schema rejeita caminhos, argumentos, fingerprints e campos extras. Alterar ou restaurar preferências afeta o comportamento de abertura somente para módulos cuja autorização nativa continua válida. [Ciclo 06](cycle-06.md)
 
 ## Processos, janelas e dados
 

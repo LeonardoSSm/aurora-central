@@ -4,7 +4,7 @@ Tauri 2 e Rust criam a janela. A WebView do sistema renderiza React, TypeScript 
 
 | Local | Responsabilidade |
 | --- | --- |
-| `src/ui/` | Home, navegação por teclado, composição orbital, feedback e diálogo de aplicativos |
+| `src/ui/` | Home, navegação por teclado, composição orbital, feedback e diálogo de configurações |
 | `src/graphics/` | Canvas WebGL 2, perfis, estados, amostragem volumétrica, shaders GLSL e ciclo de renderização |
 | `src/domain/` | Identidade visual dos módulos, comandos, resultados e transição orbital |
 | `src/desktop/` | Tela cheia, IPC tipado e atualização de estado na WebView |
@@ -13,6 +13,7 @@ Tauri 2 e Rust criam a janela. A WebView do sistema renderiza React, TypeScript 
 | `src-tauri/src/launcher/service.rs` | Registro em execução, coordenação de abertura, processos iniciados e atualização de estados |
 | `src-tauri/src/launcher/executable.rs` e `store.rs` | Validação, autorização, início nativo e persistência transacional por plataforma |
 | `src-tauri/src/launcher/platform/` | Descoberta de processos e monitores, verificação de janelas, foco e posicionamento |
+| `src-tauri/src/settings.rs` e `storage.rs` | Schema, validação de preferências, migração, controle de revisão e operações compartilhadas de disco |
 
 O React monta o canvas e passa estados ao renderizador. Three.js e GLSL trabalham com `BufferGeometry`, `Points` e `RawShaderMaterial` sobre WebGL 2. Um `ResizeObserver` recalcula a projeção orbital. Os mesmos pontos posicionam botões, âncoras e a direção da resposta do núcleo. O renderizador mantém as atualizações por quadro. [Motor gráfico](graphics-engine.md)
 
@@ -23,11 +24,15 @@ O React monta o canvas e passa estados ao renderizador. Three.js e GLSL trabalha
 3. A WebView acompanha a inicialização em paralelo com a consulta periódica de estado. A descoberta de janela, uma resposta do adaptador, um erro ou o limite de espera conclui o pedido. `module.open.settled` correlaciona o resultado à seleção original.
 4. Mudar de modo, pressionar Esc ou selecionar outro módulo descarta a seleção anterior. Se o pulso ainda estiver em curso, o comando deixa de ser enviado. Se o Rust já recebeu o pedido, a home descarta a resposta anterior e o processo continua independente.
 
-As entradas de apresentação trazem nome, ícone, cor e ângulo. A política nativa fornece argumentos permitidos e estratégia. Um novo módulo usa as mesmas rotinas de abertura e projeção depois de receber uma entrada nessas duas tabelas. O registro persistente guarda a aprovação do usuário e a preferência de monitor. A política fica compilada no Rust.
+As entradas de apresentação trazem nome, ícone, cor e ângulo. A política nativa fornece argumentos permitidos e estratégia. Um novo módulo usa as mesmas rotinas de abertura e projeção depois de receber uma entrada nessas duas tabelas. O registro nativo guarda a aprovação do executável. O Settings Manager fornece preferências por módulo sob o mesmo mutex usado na abertura.
 
 ## Fronteiras de execução
 
-`main-local` permite tela cheia e cinco comandos de launcher na WebView local `main`. A seleção e a confirmação do executável ocorrem em diálogos nativos abertos pelo Rust. A CSP de produção limita conexões ao transporte interno do Tauri e bloqueia frames, formulários e objetos. A versão de navegador usa a Fullscreen API e informa que a abertura de aplicativos requer desktop. [Integração](application-integration.md) · [Segurança](security.md)
+`main-local` permite tela cheia, cinco comandos de launcher e dois de preferências na WebView local `main`. A seleção e a confirmação do executável ocorrem em diálogos nativos abertos pelo Rust. A CSP de produção limita conexões ao transporte interno do Tauri e bloqueia frames, formulários e objetos. A versão de navegador usa a Fullscreen API e mantém os ajustes na sessão. [Integração](application-integration.md) · [Segurança](security.md)
+
+## Fluxo de configurações
+
+O React lê um snapshot no início da sessão e mantém um rascunho enquanto o diálogo está aberto. A prévia aplica uniformes, faixa de desenho e tamanho do buffer ao canvas da home. O clique em **Aplicar** envia a revisão lida e o schema completo ao Rust. Apenas uma gravação concluída publica uma nova revisão. O launcher consulta as preferências confirmadas antes de decidir entre reutilizar uma instância, iniciar um processo ou solicitar foco. [Schema, migração e recuperação](cycle-06.md)
 
 ## Fluxo conversacional
 

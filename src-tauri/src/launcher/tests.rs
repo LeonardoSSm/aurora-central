@@ -3,12 +3,13 @@ use std::{fs, path::Path};
 use serde_json::json;
 
 use super::{
-    contracts::{AppId, AppRequest, ApplicationState, Fault, MonitorRequest},
+    contracts::{AppId, AppRequest, ApplicationState, Fault, MonitorId, MonitorRequest},
     executable::Executable,
     platform::Processes,
     service::Launcher,
     store::Store,
 };
+use crate::settings::{Opening, Settings, SettingsError};
 
 #[test]
 fn ipc_payloads_only_accept_registered_ids_and_typed_monitor_ids() {
@@ -48,6 +49,54 @@ fn unconfigured_apps_cannot_launch() {
 }
 
 #[cfg(any(windows, target_os = "linux"))]
+#[test]
+fn migrates_legacy_monitor_and_keeps_authorization_independent_of_reset() {
+    let directory = tempfile::tempdir().unwrap();
+    let valid = copy_test_binary(directory.path(), "legacy");
+    let monitor = MonitorId::try_from("b".repeat(64)).unwrap();
+    let mut approval = Executable::select(&valid).unwrap().approval().unwrap();
+    approval.monitor = Some(monitor.clone());
+    let mut store = Store::load(directory.path()).unwrap();
+    store.save(AppId::Lens, Some(approval)).unwrap();
+    drop(store);
+    let path = directory.path().join("launcher-v1.json");
+    let original = fs::read(&path).unwrap();
+
+    let mut launcher = Launcher::load(Some(directory.path()));
+    let mut settings = launcher.settings().settings;
+    assert_eq!(
+        settings.modules[&AppId::Lens].preferred_monitor,
+        Some(monitor)
+    );
+    settings.modules.get_mut(&AppId::Lens).unwrap().opening = Opening::RunningOnly;
+    launcher.save_settings(settings, 0, &[]).unwrap();
+    assert_eq!(
+        launcher.open(AppId::Lens, &[]),
+        ApplicationState::NotRunning
+    );
+    assert_eq!(
+        launcher.open(AppId::Board, &[]),
+        ApplicationState::NotConfigured
+    );
+    launcher.save_settings(Settings::default(), 1, &[]).unwrap();
+    drop(launcher);
+
+    let mut restarted = Launcher::load(Some(directory.path()));
+    assert_eq!(restarted.settings().settings, Settings::default());
+    assert_eq!(fs::read(&path).unwrap(), original);
+    assert_eq!(
+        restarted
+            .snapshot(&[])
+            .applications
+            .iter()
+            .find(|app| app.id == AppId::Lens)
+            .unwrap()
+            .state,
+        ApplicationState::Available
+    );
+}
+
+#[cfg(any(windows, target_os = "linux"))]
 fn copy_test_binary(directory: &Path, name: &str) -> std::path::PathBuf {
     let path = directory.join(format!("{name}{}", std::env::consts::EXE_SUFFIX));
     fs::copy(std::env::current_exe().unwrap(), &path).unwrap();
@@ -62,7 +111,14 @@ fn persists_a_native_approval_rejects_duplicate_registration_and_detects_removal
     let mut launcher = Launcher::load(Some(directory.path()));
     let mut executable = Executable::select(&valid).unwrap();
     let approval = executable.approval().unwrap();
-    assert!(matches!(Store::load(directory.path()), Err(Fault::Storage)));
+    let mut competing = Launcher::load(Some(directory.path()));
+    assert_eq!(competing.can_configure(), Err(Fault::Storage));
+    assert_eq!(
+        competing
+            .save_settings(Settings::default(), 0, &[])
+            .unwrap_err(),
+        SettingsError::Storage
+    );
     launcher
         .set_executable(AppId::Lens, approval.clone())
         .unwrap();
