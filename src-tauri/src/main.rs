@@ -5,7 +5,11 @@ mod settings;
 mod storage;
 
 fn main() {
-    tauri::Builder::default()
+    let builder = tauri::Builder::default();
+    #[cfg(windows)]
+    let builder = builder.on_window_event(sync_webview_visibility);
+
+    builder
         .plugin(tauri_plugin_dialog::init())
         .setup(launcher::setup)
         .invoke_handler(tauri::generate_handler![
@@ -19,6 +23,26 @@ fn main() {
         ])
         .run(tauri::generate_context!())
         .expect("failed to start Aurora Central");
+}
+
+#[cfg(windows)]
+fn sync_webview_visibility(window: &tauri::Window, event: &tauri::WindowEvent) {
+    use tauri::Manager;
+
+    if window.label() != "main" || !matches!(event, tauri::WindowEvent::Resized(_)) {
+        return;
+    }
+
+    // WebView2 does not inherit minimize/restore events from its host HWND.
+    if let (Ok(minimized), Some(main)) = (window.is_minimized(), window.get_webview_window("main"))
+    {
+        let webview = main.as_ref();
+        let _ = if minimized {
+            webview.hide()
+        } else {
+            webview.show()
+        };
+    }
 }
 
 #[cfg(test)]
