@@ -1,0 +1,45 @@
+{
+  "webview": "Edg/158.0.4370.33",
+  "phase": "recover",
+  "recovered": true,
+  "defaults": {
+    "resources": {
+      "Buffer": {
+        "created": 1,
+        "deleted": 0
+      },
+      "Framebuffer": {
+        "created": 3,
+        "deleted": 0
+      },
+      "Program": {
+        "created": 1,
+        "deleted": 0
+      },
+      "Renderbuffer": {
+        "created": 0,
+        "deleted": 0
+      },
+      "Shader": {
+        "created": 2,
+        "deleted": 2
+      },
+      "Texture": {
+        "created": 4,
+        "deleted": 0
+      },
+      "VertexArray": {
+        "created": 1,
+        "deleted": 0
+      }
+    },
+    "draws": 21,
+    "count": 20000,
+    "contextChanges": 1,
+    "losses": 0,
+    "width": 867,
+    "height": 867,
+    "cssWidth": 578
+  },
+  "errors": []
+}

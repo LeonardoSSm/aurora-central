@@ -1,0 +1,10 @@
+{
+  "file": "Aurora Central_0.1.0_x64-setup.exe",
+  "sizeBytes": 2318061,
+  "sha256": "7dba59272edc4110ebdf5140ea511230430228d8d59c0eb11504484f5eaf4ad1",
+  "authenticode": "NotSigned",
+  "installedBinarySha256": "10a4c9a9a5525d7600174d7ade953f85043d205e585028fbb4afc46828c36886",
+  "currentUserInstallVerified": true,
+  "installedBinaryMatchesBuild": true,
+  "uninstallVerified": true
+}
