@@ -1,0 +1,63 @@
+{
+  "webview": "Edg/158.0.4370.33",
+  "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "viewport": [
+    1280,
+    800
+  ],
+  "dpr": 1,
+  "elapsedMs": 65448,
+  "active": {
+    "elapsedMs": 4007,
+    "draws": 235,
+    "fps": 58.65,
+    "frameP95Ms": 17.2,
+    "webviewCpuMsPerSecond": 483,
+    "hidden": false
+  },
+  "idle": {
+    "elapsedMs": 4014,
+    "draws": 120,
+    "fps": 29.9,
+    "frameP95Ms": 33.8,
+    "webviewCpuMsPerSecond": 218,
+    "hidden": false
+  },
+  "minimized": {
+    "elapsedMs": 4002,
+    "draws": 80,
+    "fps": 19.99,
+    "frameP95Ms": 66.3,
+    "webviewCpuMsPerSecond": 178,
+    "hidden": false
+  },
+  "resumed": {
+    "elapsedMs": 1513,
+    "draws": 91,
+    "fps": 60.17,
+    "frameP95Ms": 16.9,
+    "webviewCpuMsPerSecond": 210,
+    "hidden": false
+  },
+  "recovered": {
+    "elapsedMs": 1513,
+    "draws": 91,
+    "fps": 60.13,
+    "frameP95Ms": 16.9,
+    "webviewCpuMsPerSecond": 223,
+    "hidden": false
+  },
+  "heapStart": {
+    "usedSize": 5841708,
+    "totalSize": 9437184,
+    "embedderHeapUsedSize": 2700808,
+    "backingStorageSize": 4051148
+  },
+  "heapEnd": {
+    "usedSize": 4191108,
+    "totalSize": 6291456,
+    "embedderHeapUsedSize": 6448440,
+    "backingStorageSize": 2026566
+  },
+  "exceptions": []
+}

@@ -1,0 +1,14 @@
+{
+  "webview": "Edg/158.0.4370.33",
+  "phase": "restart",
+  "remembered": [
+    "immersive",
+    "reduced",
+    "glacier",
+    37000,
+    "running-only",
+    "preferred-monitor"
+  ],
+  "reset": true,
+  "errors": []
+}
